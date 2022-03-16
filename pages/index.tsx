@@ -1,10 +1,8 @@
 import type { NextPage } from "next"
-import Head from "next/head"
-import Image from "next/image"
-import styles from "../styles/Home.module.css"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import { LoadingButton } from "@mui/lab"
+import detectEthereumProvider from "@metamask/detect-provider"
 import {
   Paper,
   Box,
@@ -15,7 +13,7 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React from "react"
+import { useEffect, useState } from "react"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -61,10 +59,36 @@ const theme = createTheme({
 
 const Home: NextPage = () => {
   const classes = useStyles()
-  const [_ethereumProvider, setEthereumProvider] = React.useState<any>()
-  const [_activeStep, setActiveStep] = React.useState<number>(0)
-  const [_error, setError] = React.useState<boolean>(false)
-  const [_loading, setLoading] = React.useState<boolean>(false)
+  const [_ethereumProvider, setEthereumProvider] = useState<any>()
+  const [_activeStep, setActiveStep] = useState<number>(0)
+  const [_error, setError] = useState<boolean>(false)
+  const [_loading, setLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    ;(async function IIFE() {
+        if (!_ethereumProvider) {
+            const ethereumProvider = (await detectEthereumProvider()) as any
+
+            if (ethereumProvider) {
+                setEthereumProvider(ethereumProvider)
+            } else {
+                console.error("Please install Metamask!")
+            }
+        } else {
+            const accounts = await _ethereumProvider.request({ method: "eth_accounts" })
+
+            if (accounts.length !== 0 && accounts[0]) {
+                setActiveStep(0)
+            }
+
+            _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
+                if (newAccounts.length === 0) {
+                    setActiveStep(0)
+                }
+            })
+        }
+    })()
+  }, [_ethereumProvider])
 
   async function connect() {
     await _ethereumProvider.request({ method: "eth_requestAccounts" })
