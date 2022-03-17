@@ -3,6 +3,8 @@ import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import { LoadingButton } from "@mui/lab"
 import detectEthereumProvider from "@metamask/detect-provider"
+import QRCode from "qrcode.react"
+import { Modal } from "@mui/material"
 import {
   Paper,
   Box,
@@ -13,7 +15,7 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,20 +32,20 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: "column",
       alignItems: "center"
     },
-    results: {
-      position: "relative",
-      marginTop: 20,
-      width: 530,
-      textAlign: "center"
+    qrmodal: {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width:"300px",
+      height:"300px",
+      backgroundColor: "white",
     },
-    resetButton: {
-      zIndex: 1,
-      right: 5,
-      top: 5
-    },
-    listItem: {
-      paddingTop: 0,
-      paddingBottom: 0
+    qrcode: {
+      position:"absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
     }
   })
 )
@@ -57,12 +59,19 @@ const theme = createTheme({
   }
 })
 
+const NODE_URL = "http:%2f%2fnode.brightid.org"
+const CONTEXT = "interep"
+
 const Home: NextPage = () => {
   const classes = useStyles()
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
   const [_error, setError] = useState<boolean>(false)
   const [_loading, setLoading] = useState<boolean>(false)
+  const [_open, setOpen] = useState<boolean>(false)
+  const [url, setUrl] = useState<string>()
+  const [account, setAccount] = useState<string>()
+  const [verified, setVerified] = useState<boolean>(false)
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -76,6 +85,8 @@ const Home: NextPage = () => {
             }
         } else {
             const accounts = await _ethereumProvider.request({ method: "eth_accounts" })
+            setAccount(accounts)
+            qrcode(accounts)
 
             if (accounts.length !== 0 && accounts[0]) {
                 setActiveStep(1)
@@ -90,6 +101,12 @@ const Home: NextPage = () => {
     })()
   }, [_ethereumProvider])
 
+  async function qrcode(address: string) {
+    const verificationLink = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${address}`
+    setUrl(verificationLink)
+  }
+
+  
   async function connect() {
     await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
@@ -103,9 +120,26 @@ const Home: NextPage = () => {
     handleNext()
   }
 
+  async function getBrightIdUserData(address: string) {
+    const response = await fetch(`https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`)
+    return response.json()
+  }
+
+  const checkVerification = useCallback(async (address:string) => {
+    const brightIdUser = await getBrightIdUserData(address)
+    setVerified(brightIdUser.data?.unique)
+    console.log(brightIdUser.data?.unique)
+  }, [])
+  
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(false)
+  }
+  function handleOpen(){
+    setOpen(true)
+  }
+  function handleClose(){
+    setOpen(false)
   }
 
   return (
@@ -135,16 +169,36 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={!!_error}>Link BrightId to Interep</StepLabel>
+              <StepLabel error={!!_error}>Link BrightID to Interep</StepLabel>
               <StepContent style={{ width: 400 }}>
-                <LoadingButton
-                  loading={_loading}
-                  loadingIndicator="Loading..."
-                  fullWidth
-                  variant="outlined"
+                <Modal
+                  open={_open}
+                  onClose={handleClose}
                 >
-                  Linking
-                </LoadingButton>
+                  <Box className={classes.qrmodal}>
+                    {url ? (
+                      <QRCode value={url} className={classes.qrcode}/>
+                    ) : (
+                      <Typography>error</Typography>
+                    )}
+                  </Box>
+                </Modal>
+                <Button
+                  fullWidth={false}
+                  onClick={handleOpen}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  Link BrightID
+                </Button>
+                <Button
+                  fullWidth={false}
+                  onClick={() => { account && checkVerification(account) }}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  Check Verification
+                </Button>
               </StepContent>
             </Step>
           </Stepper>
