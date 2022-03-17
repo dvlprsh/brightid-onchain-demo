@@ -78,7 +78,7 @@ const Home: NextPage = () => {
     signMessage,
     retrieveIdentityCommitment,
     joinGroup,
-    // leaveGroup,
+    leaveGroup,
     loading
   } = useOnChainGroups()
   
@@ -116,7 +116,7 @@ const Home: NextPage = () => {
       method: "wallet_switchEthereumChain",
       params: [
         {
-          chainId: "0x2a"
+          chainId: "0x3" //kovan: "0x2a"
         }
       ]
     })
