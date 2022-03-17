@@ -30,8 +30,8 @@ type ReturnParameters = {
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (
-    identityCommitment: bigint,
-    members: bigint[]
+    identityCommitment: string,
+    members: string[]
   ) => Promise<true | null>
   loading: boolean
 }
@@ -113,8 +113,8 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const leaveGroup = useCallback(
     async (
-      IdentityCommitment: bigint,
-      members: bigint[]
+      IdentityCommitment: string,
+      members: string[]
     ): Promise<true | null> => {
       setLoading(true)
       const merkleproof = generateMerkleProof(20,BigInt(0),members,IdentityCommitment)
