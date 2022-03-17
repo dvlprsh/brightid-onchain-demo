@@ -95,9 +95,9 @@ const Home: NextPage = () => {
         } else {
             const accounts = await _ethereumProvider.request({ method: "eth_accounts" })
             setAccount(accounts)
-            qrcode(accounts)
+            setUrl(`brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`)
 
-            if (accounts.length !== 0 && accounts[0]) {
+            if (accounts[0]) {
                 setActiveStep(1)
             }
 
@@ -109,12 +109,6 @@ const Home: NextPage = () => {
         }
     })()
   }, [_ethereumProvider])
-
-  async function qrcode(address: string) {
-    const verificationLink = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${address}`
-    setUrl(verificationLink)
-  }
-
   
   async function connect() {
     await _ethereumProvider.request({ method: "eth_requestAccounts" })
@@ -137,7 +131,6 @@ const Home: NextPage = () => {
   const checkVerification = useCallback(async (address:string) => {
     const brightIdUser = await getBrightIdUserData(address)
     setVerified(brightIdUser.data?.unique)
-    console.log(brightIdUser.data?.unique)
   }, [])
   
   function handleNext() {
