@@ -78,7 +78,7 @@ const Home: NextPage = () => {
             const accounts = await _ethereumProvider.request({ method: "eth_accounts" })
 
             if (accounts.length !== 0 && accounts[0]) {
-                setActiveStep(0)
+                setActiveStep(1)
             }
 
             _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
