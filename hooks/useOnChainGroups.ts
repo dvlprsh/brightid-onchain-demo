@@ -3,10 +3,10 @@ import { Signer, utils, Contract, providers, Wallet } from "ethers"
 import createIdentity from "@interep/identity"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
-import { generateMerkleProof } from "@zk-kit/protocols"
+import { generateMerkleProof } from "src/generatemerkleproof"
 
 const contract = new Contract(
-  "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A",
+  "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", //0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
@@ -22,14 +22,15 @@ const adminWallet = new Wallet(ADMIN, provider)
 // Privatekey
 
 // const adminAddress = adminWallet.getAddress()
-const groupId = "103" // utils.formatBytes32String("brightid")
+const groupId = "333" // utils.formatBytes32String("brightid")
+
 
 type ReturnParameters = {
   signMessage: (signer: Signer, message: string) => Promise<string | null>
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (
-    identityCommitment: string,
+    identityCommitment: bigint,
     members: bigint[]
   ) => Promise<true | null>
   loading: boolean
@@ -112,19 +113,13 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const leaveGroup = useCallback(
     async (
-      IdentityCommitment: string,
+      IdentityCommitment: bigint,
       members: bigint[]
     ): Promise<true | null> => {
       setLoading(true)
-      const merkleproof = generateMerkleProof(
-        20,
-        BigInt(0),
-        members,
-        IdentityCommitment
-      )
-
+      const merkleproof = generateMerkleProof(20,BigInt(0),members,IdentityCommitment)
       console.log(
-        "\n---leaf----\n" +
+          "\n---leaf----\n" +
           merkleproof.leaf +
           "\n----pathindices---\n" +
           merkleproof.pathIndices +
@@ -144,11 +139,11 @@ export default function useOnChainGroups(): ReturnParameters {
         )
 
       setLoading(false)
-      //   toast({
-      //     description: `You out`,
-      //     variant: "subtle",
-      //     isClosable: true
-      //   })
+          // toast({
+          //   description: `You out`,
+          //   variant: "subtle",
+          //   isClosable: true
+          // })
       return true
     },
     []
