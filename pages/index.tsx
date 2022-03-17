@@ -16,6 +16,7 @@ import {
   StepContent
 } from "@mui/material"
 import { useCallback, useEffect, useState } from "react"
+import useOnChainGroups from "hooks/useOnChainGroups"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -73,6 +74,14 @@ const Home: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
 
+  const {
+    signMessage,
+    retrieveIdentityCommitment,
+    joinGroup,
+    // leaveGroup,
+    loading
+  } = useOnChainGroups()
+  
   useEffect(() => {
     ;(async function IIFE() {
         if (!_ethereumProvider) {
