@@ -3,14 +3,14 @@ import { Signer, utils, Contract, providers, Wallet } from "ethers"
 import createIdentity from "@interep/identity"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
-// import { generateMerkleProof } from "@zk-kit/protocols"
+import { generateMerkleProof } from "@zk-kit/protocols"
 
 const contract = new Contract(
   "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A",
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
-  "https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24"
+  `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`
 )
 
 // const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
@@ -30,7 +30,7 @@ type ReturnParameters = {
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (
     identityCommitment: string,
-    members: string[]
+    members: bigint[]
   ) => Promise<true | null>
   loading: boolean
 }
@@ -100,11 +100,11 @@ export default function useOnChainGroups(): ReturnParameters {
         .addMember(groupId, identityCommitment, { gasLimit: 3000000 })
 
       setLoading(false)
-      toast({
-        description: `You joined the ${groupId} group correctly.`,
-        variant: "subtle",
-        isClosable: true
-      })
+      // toast({
+      //   description: `You joined the ${groupId} group correctly.`,
+      //   variant: "subtle",
+      //   isClosable: true
+      // })
       return true
     },
     []
