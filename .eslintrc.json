@@ -1,3 +1,10 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-console": "error",
+    "no-unused-vars": "error",
+    "react/react-in-jsx-scope": "error",
+    "react/no-unsafe": "error",
+    "react-hooks/rules-of-hooks": "error"
+  }
 }
