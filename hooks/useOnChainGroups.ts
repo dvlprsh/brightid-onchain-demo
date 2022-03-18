@@ -10,7 +10,7 @@ const contract = new Contract(
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
-  `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`
+  `https://ropsten.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
 )
 
 // const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
