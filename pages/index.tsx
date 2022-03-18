@@ -144,7 +144,7 @@ const Home: NextPage = () => {
 
   const getGroupData = async () => {
     const endPoint = "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
-    const query = "{onchainGroups(first: 5) {id,members{identityCommitment}}}"
+    const query = "{onchainGroups(orderBy:id){id,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
