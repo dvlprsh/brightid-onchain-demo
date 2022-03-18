@@ -87,6 +87,7 @@ const Home: NextPage = () => {
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>(false)
+  const [_identityCommitment, setIdentityCommitment] = useState<string>()
 
   const {
     groupId,
@@ -188,15 +189,30 @@ const Home: NextPage = () => {
   }, [])
 
   const generateIdentity = async () => {
-    if (!_signer) return
+    const identityCommitment =
+      _signer && (await retrieveIdentityCommitment(_signer))
 
-    const identityCommitment = await retrieveIdentityCommitment(_signer)
+    if (!identityCommitment) return
+
     const joinedMembers = await getMembers(GROUP_ID)
     const hasJoined = joinedMembers.includes(identityCommitment)
 
     setHasJoined(hasJoined)
+    setIdentityCommitment(identityCommitment)
     identityCommitment && setActiveStep(3)
   }
+
+  const joinOnChainGroup = async () => {
+    if (!_signer || !_identityCommitment) return
+
+    const userSignature = await signMessage(_signer, _identityCommitment)
+
+    if (await joinGroup(_identityCommitment)) {
+      setHasJoined(true)
+    }
+  }
+
+  const leaveOnChainroup = () => {}
 
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
@@ -238,13 +254,10 @@ const Home: NextPage = () => {
             <Step>
               <StepLabel error={!!_error}>Link BrightID to Interep</StepLabel>
               <StepContent style={{ width: 400 }}>
-                <Modal
-                  open={_open}
-                  onClose={handleClose}
-                >
+                <Modal open={_open} onClose={handleClose}>
                   <Box className={classes.qrmodal}>
                     {url ? (
-                      <QRCode value={url} className={classes.qrcode}/>
+                      <QRCode value={url} className={classes.qrcode} />
                     ) : (
                       <Typography>error</Typography>
                     )}
@@ -260,7 +273,9 @@ const Home: NextPage = () => {
                 </Button>
                 <Button
                   fullWidth={false}
-                  onClick={() => { account && checkVerification(account) }}
+                  onClick={() => {
+                    account && checkVerification(account)
+                  }}
                   variant="outlined"
                   disabled={!_ethereumProvider}
                 >
@@ -280,6 +295,21 @@ const Home: NextPage = () => {
                   disabled={!_ethereumProvider}
                 >
                   Generate Identity
+                </Button>
+              </StepContent>
+            </Step>
+            <Step>
+              <StepLabel error={!!_error}>
+                {_hasJoined ? "Leave" : "Join"} Group
+              </StepLabel>
+              <StepContent style={{ width: 400 }}>
+                <Button
+                  fullWidth={false}
+                  onClick={_hasJoined ? leaveOnChainroup : joinOnChainGroup}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  {_hasJoined ? "Leave" : "Join"} Group
                 </Button>
               </StepContent>
             </Step>
