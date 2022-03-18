@@ -4,7 +4,13 @@ import { createStyles, makeStyles } from "@mui/styles"
 import { LoadingButton } from "@mui/lab"
 import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
-import { Modal } from "@mui/material"
+import {
+  Modal,
+  ListItem,
+  List,
+  ListItemButton,
+  ListItemText
+} from "@mui/material"
 import { providers, Signer, ethers } from "ethers"
 import {
   Paper,
@@ -16,7 +22,7 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import useOnChainGroups from "hooks/useOnChainGroups"
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -48,6 +54,12 @@ const useStyles = makeStyles((theme: Theme) =>
       top: "50%",
       left: "50%",
       transform: "translate(-50%, -50%)"
+    },
+    results: {
+      position: "relative",
+      marginTop: 20,
+      width: 530,
+      textAlign: "center"
     }
   })
 )
@@ -74,13 +86,14 @@ interface subgraphData {
   memebers: memberData[]
 }
 
-
 const Home: NextPage = () => {
   const classes = useStyles()
 
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
-  const [_error, setError] = useState<boolean>(false)
+  const [_error, setError] = useState<
+    { errorStep: number; message?: string } | undefined
+  >()
   const [_loading, setLoading] = useState<boolean>(false)
   const [_open, setOpen] = useState<boolean>(false)
   const [url, setUrl] = useState<string>()
@@ -98,6 +111,10 @@ const Home: NextPage = () => {
     leaveGroup,
     loading
   } = useOnChainGroups()
+
+  useEffect(() => {
+    setError(undefined)
+  }, [_activeStep])
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -194,39 +211,54 @@ const Home: NextPage = () => {
   }, [])
 
   const generateIdentity = async () => {
-    const identityCommitment =
-      _signer && (await retrieveIdentityCommitment(_signer))
+    try {
+      const identityCommitment =
+        _signer && (await retrieveIdentityCommitment(_signer))
 
-    if (!identityCommitment) return
+      if (!identityCommitment) return
 
-    const joinedMembers = await (await getGroupData()).identityCommitmentsList
-    const hasJoined = joinedMembers.includes(identityCommitment)
+      const joinedMembers = await (await getGroupData()).identityCommitmentsList
+      const hasJoined = joinedMembers.includes(identityCommitment)
 
-    setHasJoined(hasJoined)
-    setIdentityCommitment(identityCommitment)
-    identityCommitment && setActiveStep(3)
+      setHasJoined(hasJoined)
+      setIdentityCommitment(identityCommitment)
+      identityCommitment && setActiveStep(3)
+    } catch (e) {
+      setError({ errorStep: _activeStep })
+    }
   }
 
   const joinOnChainGroup = async () => {
-    if (!_signer || !_identityCommitment) return
+    try {
+      if (!_signer || !_identityCommitment) return
 
-    const userSignature = await signMessage(_signer, _identityCommitment)
+      const userSignature = await signMessage(_signer, _identityCommitment)
 
-    if (await joinGroup(_identityCommitment)) setHasJoined(undefined)
+      if (await joinGroup(_identityCommitment)) setHasJoined(undefined)
+    } catch (e) {
+      setError({ errorStep: _activeStep })
+    }
   }
 
   const leaveOnchainGroup = async () => {
-    if (!_signer || !_identityCommitment) return
+    try {
+      if (!_signer || !_identityCommitment) return
 
-    const userSignature = await signMessage(_signer, _identityCommitment)
-    const IdentityCommitments = await (await getGroupData()).identityCommitmentsList
+      const userSignature = await signMessage(_signer, _identityCommitment)
+      const IdentityCommitments = await (
+        await getGroupData()
+      ).identityCommitmentsList
 
-    if (await leaveGroup(IdentityCommitments,_identityCommitment)) setHasJoined(undefined)
+      if (await leaveGroup(IdentityCommitments, _identityCommitment))
+        setHasJoined(undefined)
+    } catch (e) {
+      setError({ errorStep: _activeStep })
+    }
   }
 
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
-    setError(false)
+    setError(undefined)
   }
   function handleOpen() {
     setOpen(true)
@@ -249,7 +281,9 @@ const Home: NextPage = () => {
 
           <Stepper activeStep={_activeStep} orientation="vertical">
             <Step>
-              <StepLabel>Connect your wallet with Metamask</StepLabel>
+              <StepLabel error={_error?.errorStep === 0}>
+                Connect your wallet with Metamask
+              </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <Button
                   fullWidth
@@ -262,7 +296,9 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={!!_error}>Link BrightID to Interep</StepLabel>
+              <StepLabel error={_error?.errorStep === 1}>
+                Link BrightID to Interep
+              </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <Modal open={_open} onClose={handleClose}>
                   <Box className={classes.qrmodal}>
@@ -294,7 +330,7 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={!!_error}>
+              <StepLabel error={_error?.errorStep === 2}>
                 Generate your Semaphore identity
               </StepLabel>
               <StepContent style={{ width: 400 }}>
@@ -309,7 +345,7 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={!!_error}>
+              <StepLabel error={_error?.errorStep === 3}>
                 {_hasJoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
@@ -324,6 +360,29 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
           </Stepper>
+          {_error && (
+            <Paper className={classes.results} sx={{ p: 3 }}>
+              <Typography variant="body1">
+                Sorry, there was an error in the creation of your Semaphore
+                proof.
+              </Typography>
+              <List sx={{ mb: 0 }}>
+                <ListItem>
+                  <ListItemText secondary="• Make sure you have enough balance in your wallet." />
+                </ListItem>
+                <ListItemButton
+                  component="a"
+                  href={"https://kovan.etherscan.io/token/" + "contractAddress"}
+                  target="_blank"
+                >
+                  <ListItemText secondary="• Click here to check if you have already joined the group." />
+                </ListItemButton>
+              </List>
+              {_error.message && (
+                <Typography variant="body1">{_error.message}</Typography>
+              )}
+            </Paper>
+          )}
         </Box>
       </Paper>
     </ThemeProvider>
