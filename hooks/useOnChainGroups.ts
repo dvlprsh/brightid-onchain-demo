@@ -22,21 +22,23 @@ const adminWallet = new Wallet(ADMIN, provider)
 // Privatekey
 
 // const adminAddress = adminWallet.getAddress()
-const groupId = "333" // utils.formatBytes32String("brightid")
 
 
 type ReturnParameters = {
+  groupId: string
   signMessage: (signer: Signer, message: string) => Promise<string | null>
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (
     identityCommitment: string,
     members: string[]
-  ) => Promise<true | null>
-  loading: boolean
-}
-
+    ) => Promise<true | null>
+    loading: boolean
+  }
+  
 export default function useOnChainGroups(): ReturnParameters {
+
+  const groupId = "2" // utils.formatBytes32String("brightid")
   const [_loading, setLoading] = useState<boolean>(false)
 
   const signMessage = useCallback(
@@ -150,6 +152,7 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   return {
+    groupId,
     retrieveIdentityCommitment,
     signMessage,
     joinGroup,

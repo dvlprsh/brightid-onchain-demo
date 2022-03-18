@@ -63,6 +63,14 @@ const theme = createTheme({
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 
+interface memberData {
+  identityCommitment: string;
+}
+interface subgraphData {
+  id: string,
+  memebers: memberData[]
+}
+
 const Home: NextPage = () => {
   const classes = useStyles()
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
@@ -75,6 +83,7 @@ const Home: NextPage = () => {
   const [verified, setVerified] = useState<boolean>(false)
 
   const {
+    groupId,
     signMessage,
     retrieveIdentityCommitment,
     joinGroup,
@@ -132,6 +141,24 @@ const Home: NextPage = () => {
     const brightIdUser = await getBrightIdUserData(address)
     setVerified(brightIdUser.data?.unique)
   }, [])
+
+  const getGroupData = async () => {
+    const endPoint = "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
+    const query = "{onchainGroups(first: 5) {id,members{identityCommitment}}}"
+    const response = await fetch(endPoint, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({query})
+    })
+    return response.json()
+  }
+
+  const printMembers = useCallback(async (currentGroup: string) => { // params: groupId
+      const queryData = await getGroupData()
+      const groupMembers = queryData.data.onchainGroups.filter( (v: subgraphData) => v.id === currentGroup)
+      const identityCommitmentsList = groupMembers[0].members.map( (v: memberData) => BigInt(v.identityCommitment))
+      return identityCommitmentsList
+  },[])
   
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
