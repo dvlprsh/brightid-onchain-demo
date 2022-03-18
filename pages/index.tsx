@@ -89,8 +89,6 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_groupAdmin, setGroupAdmin] = useState<string>()
-  const [_root, setRoot] = useState<string>()
 
   const {
     groupId,
@@ -129,7 +127,6 @@ const Home: NextPage = () => {
 
         if (account) {
           checkVerification(account)
-          getGroupData()
           setActiveStep(1)
         }
 
@@ -180,26 +177,20 @@ const Home: NextPage = () => {
     return response.json()
   }
 
-  const getMembers = useCallback(async () => {
-    const queryData = await getSubgraphData()
-    const groupMembers = queryData.data.onchainGroups.filter(
-      (v: subgraphData) => v.id === groupId
-    )
-
-    const identityCommitmentsList = groupMembers[0].members.map(
-      (v: memberData) => v.identityCommitment
-    )
-
-    return identityCommitmentsList
-  }, [])
-
   const getGroupData = useCallback(async () => {
     const queryData = await getSubgraphData()
     const groupData = queryData.data.onchainGroups.filter(
       (v: subgraphData) => v.id === groupId
     )
-    setGroupAdmin(groupData[0].admin)
-    setRoot(groupData[0].root)
+    const admin = groupData[0].admin
+
+    const root = groupData[0].root
+
+    const identityCommitmentsList = groupData[0].members.map(
+      (v: memberData) => v.identityCommitment
+    )
+
+    return { identityCommitmentsList, admin, root }
   }, [])
 
   const generateIdentity = async () => {
@@ -208,7 +199,7 @@ const Home: NextPage = () => {
 
     if (!identityCommitment) return
 
-    const joinedMembers = await getMembers()
+    const joinedMembers = await (await getGroupData()).identityCommitmentsList
     const hasJoined = joinedMembers.includes(identityCommitment)
 
     setHasJoined(hasJoined)
@@ -228,7 +219,7 @@ const Home: NextPage = () => {
     if (!_signer || !_identityCommitment) return
 
     const userSignature = await signMessage(_signer, _identityCommitment)
-    const IdentityCommitments = await getMembers()
+    const IdentityCommitments = await (await getGroupData()).identityCommitmentsList
 
     if (await leaveGroup(IdentityCommitments,_identityCommitment)) setHasJoined(undefined)
   }
