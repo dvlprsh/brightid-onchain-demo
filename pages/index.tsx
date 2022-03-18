@@ -188,7 +188,7 @@ const Home: NextPage = () => {
       } catch (e) {
         setError({
           errorStep: _activeStep,
-          message: e.toString()
+          message: `${e}`
         })
       }
     },
