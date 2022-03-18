@@ -20,8 +20,7 @@ const provider = new providers.JsonRpcProvider(
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = new Wallet(ADMIN, provider)
 // Privatekey
-
-// const adminAddress = adminWallet.getAddress()
+//const adminAddress = adminWallet.getAddress()
 
 type ReturnParameters = {
   groupId: string
@@ -29,15 +28,18 @@ type ReturnParameters = {
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (
+    root: string,
     members: string[],
     identityCommitment: string
   ) => Promise<true | null>
+  transactionHash: string
   loading: boolean
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "1" // utils.formatBytes32String("brightid")
+  const groupId = "3" // utils.formatBytes32String("brightid")
   const [_loading, setLoading] = useState<boolean>(false)
+  const [_transactionHash, setTransactionHash] = useState<string>("")
 
   const signMessage = useCallback(
     async (signer: Signer, message: string): Promise<string | null> => {
@@ -50,13 +52,6 @@ export default function useOnChainGroups(): ReturnParameters {
         return signedMessage
       } catch (error) {
         console.error(error)
-
-        // toast({
-        //     description: "Your signature is needed to join/leave the group.",
-        //     variant: "subtle",
-        //     isClosable: true
-        // })
-
         setLoading(false)
         return null
       }
@@ -66,46 +61,31 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const retrieveIdentityCommitment = useCallback(
     async (signer: Signer): Promise<string | null> => {
-      try {
         setLoading(true)
 
         const identity = await createIdentity(
           (message) => signer.signMessage(message),
           groupId
         )
+
         const identityCommitment = identity.genIdentityCommitment()
         setLoading(false)
+
         return identityCommitment.toString()
-      } catch (error) {
-        console.error(error)
-
-        // toast({
-        //     description: "Your signature is needed to create the identity commitment.",
-        //     variant: "subtle",
-        //     isClosable: true
-        // })
-
-        setLoading(false)
-        return null
-      }
     },
     []
   )
 
   const joinGroup = useCallback(
     async (identityCommitment: string): Promise<true | null> => {
-      setLoading(true)
+        setLoading(true)
 
-      await contract
-        .connect(adminWallet)
-        .addMember(groupId, identityCommitment, { gasLimit: 3000000 })
+        const transaction = await contract
+                .connect(adminWallet)
+                .addMember(groupId, identityCommitment)
 
-      setLoading(false)
-      // toast({
-      //   description: `You joined the ${groupId} group correctly.`,
-      //   variant: "subtle",
-      //   isClosable: true
-      // })
+        setTransactionHash(transaction.hash)
+        setLoading(false)
       return true
     },
     []
@@ -113,38 +93,29 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const leaveGroup = useCallback(
     async (
+      root: string,
       members: string[],
       IdentityCommitment: string,
     ): Promise<true | null> => {
-      setLoading(true)
-      const merkleproof = generateMerkleProof(20,BigInt(0),members,IdentityCommitment)
-      console.log(
-          "\n---leaf----\n" +
-          merkleproof.leaf +
-          "\n----pathindices---\n" +
-          merkleproof.pathIndices +
-          "\n---root----\n" +
-          merkleproof.root +
-          "\n----siblings---\n" +
-          merkleproof.siblings
-      )
-      await contract
-        .connect(adminWallet)
-        .removeMember(
-          groupId,
-          IdentityCommitment,
-          merkleproof.siblings,
-          merkleproof.pathIndices,
-          { gasLimit: 3000000 }
-        )
+        setLoading(true)
 
-      setLoading(false)
-          // toast({
-          //   description: `You out`,
-          //   variant: "subtle",
-          //   isClosable: true
-          // })
-      return true
+        const merkleproof = generateMerkleProof(20,BigInt(0),members,IdentityCommitment)
+
+        if(merkleproof.root != root) throw "root different. your transaction must be failed"
+
+        const transaction = await contract
+                    .connect(adminWallet)
+                    .removeMember(
+                      groupId,
+                      IdentityCommitment,
+                      merkleproof.siblings,
+                      merkleproof.pathIndices
+                    )
+
+        setTransactionHash(transaction.hash)
+        setLoading(false)
+
+        return true
     },
     []
   )
@@ -155,6 +126,7 @@ export default function useOnChainGroups(): ReturnParameters {
     signMessage,
     joinGroup,
     leaveGroup,
+    transactionHash: _transactionHash,
     loading: _loading
   }
 }
