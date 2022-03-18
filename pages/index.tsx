@@ -117,7 +117,11 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     setError(undefined)
-  }, [_activeStep])
+
+    if (_activeStep === 1 && account) {
+      checkVerification(account)
+    }
+  }, [_activeStep, account])
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -146,7 +150,6 @@ const Home: NextPage = () => {
         )
 
         if (account) {
-          checkVerification(account)
           setActiveStep(1)
         }
 
@@ -180,15 +183,24 @@ const Home: NextPage = () => {
   }
 
   const checkVerification = useCallback(async (address: string) => {
-    const brightIdUser = await getBrightIdUserData(address)
-    const isVerified = brightIdUser.data?.unique
-    isVerified && setActiveStep(2)
-  }, [])
+    try {
+      const brightIdUser = await getBrightIdUserData(address)
+      const isVerified = brightIdUser.data?.unique
+      if (isVerified) {
+        setActiveStep(2)
+      } else {
+        throw Error("You're not linked with BrightID correctly.")
+      }
+    } catch (e) {
+      setError({ errorStep: _activeStep, message: e.message })
+    }
+  }, [_activeStep])
 
   const getSubgraphData = async () => {
     const endPoint =
       "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
-    const query = "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
+    const query =
+      "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
