@@ -69,6 +69,8 @@ interface memberData {
 }
 interface subgraphData {
   id: string
+  admin: string
+  root: string
   memebers: memberData[]
 }
 
@@ -87,6 +89,8 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
+  const [_groupAdmin, setGroupAdmin] = useState<string>()
+  const [_root, setRoot] = useState<string>()
 
   const {
     groupId,
@@ -124,6 +128,8 @@ const Home: NextPage = () => {
         )
 
         if (account) {
+          checkVerification(account)
+          getGroupData()
           setActiveStep(1)
         }
 
@@ -162,10 +168,10 @@ const Home: NextPage = () => {
     isVerified && setActiveStep(2)
   }, [])
 
-  const getGroupData = async () => {
+  const getSubgraphData = async () => {
     const endPoint =
       "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
-    const query = "{onchainGroups(orderBy:id){id,members{identityCommitment}}}"
+    const query = "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -175,7 +181,7 @@ const Home: NextPage = () => {
   }
 
   const getMembers = useCallback(async () => {
-    const queryData = await getGroupData()
+    const queryData = await getSubgraphData()
     const groupMembers = queryData.data.onchainGroups.filter(
       (v: subgraphData) => v.id === groupId
     )
@@ -185,6 +191,15 @@ const Home: NextPage = () => {
     )
 
     return identityCommitmentsList
+  }, [])
+
+  const getGroupData = useCallback(async () => {
+    const queryData = await getSubgraphData()
+    const groupData = queryData.data.onchainGroups.filter(
+      (v: subgraphData) => v.id === groupId
+    )
+    setGroupAdmin(groupData[0].admin)
+    setRoot(groupData[0].root)
   }, [])
 
   const generateIdentity = async () => {
