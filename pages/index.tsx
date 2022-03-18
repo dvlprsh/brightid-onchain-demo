@@ -9,7 +9,8 @@ import {
   ListItem,
   List,
   ListItemButton,
-  ListItemText
+  ListItemText,
+  Link
 } from "@mui/material"
 import { providers, Signer, ethers } from "ethers"
 import {
@@ -102,6 +103,7 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
+  const [_transactionHash, setTransactionHash] = React.useState<string>()
 
   const {
     groupId,
@@ -358,6 +360,21 @@ const Home: NextPage = () => {
                   {_hasJoined ? "Leave" : "Join"} Group
                 </Button>
               </StepContent>
+              {_transactionHash && (
+                <Typography variant="body1">
+                  You have {_hasJoined ? "left" : "joined"} onChain group
+                  successfully. Check the&nbsp;
+                  <Link
+                    href={"https://kovan.etherscan.io/tx/" + _transactionHash}
+                    underline="hover"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    transaction
+                  </Link>
+                  !
+                </Typography>
+              )}
             </Step>
           </Stepper>
           {_error && (
