@@ -1,18 +1,10 @@
 import type { NextPage } from "next"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
-import { LoadingButton } from "@mui/lab"
 import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
-import {
-  Modal,
-  ListItem,
-  List,
-  ListItemButton,
-  ListItemText,
-  Link
-} from "@mui/material"
-import { providers, Signer, ethers } from "ethers"
+import { Modal, Link } from "@mui/material"
+import { Signer, ethers } from "ethers"
 import {
   Paper,
   Box,
@@ -188,6 +180,7 @@ const Home: NextPage = () => {
         const brightIdUser = await getBrightIdUserData(address)
         const isVerified = brightIdUser.data?.unique
         if (isVerified) {
+          setVerified(isVerified)
           setActiveStep(2)
         } else {
           throw Error("You're not linked with BrightID correctly.")
@@ -245,7 +238,10 @@ const Home: NextPage = () => {
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
     } catch (e) {
-      setError({ errorStep: _activeStep, message: "generate identity Failed - "+ e })
+      setError({
+        errorStep: _activeStep,
+        message: "generate identity Failed - " + e
+      })
     }
   }
 
@@ -255,14 +251,14 @@ const Home: NextPage = () => {
 
       const userSignature = await signMessage(_signer, _identityCommitment)
 
-      if(userSignature){
-        if (await joinGroup(_identityCommitment)){
+      if (userSignature) {
+        if (await joinGroup(_identityCommitment)) {
           setHasJoined(undefined)
           setTransactionHash(transactionHash)
         }
       }
     } catch (e) {
-      setError({ errorStep: _activeStep, message: "join group Failed - "+ e })
+      setError({ errorStep: _activeStep, message: "join group Failed - " + e })
     }
   }
 
@@ -274,14 +270,14 @@ const Home: NextPage = () => {
       const root = (await getGroupData()).root
       const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
-      if(userSignature){
-        if (await leaveGroup(root, IdentityCommitments, _identityCommitment)){
+      if (userSignature) {
+        if (await leaveGroup(root, IdentityCommitments, _identityCommitment)) {
           setHasJoined(undefined)
           setTransactionHash(transactionHash)
         }
       }
     } catch (e) {
-      setError({ errorStep: _activeStep, message: "leave group Failed - "+ e })
+      setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
     }
   }
 
@@ -342,7 +338,7 @@ const Home: NextPage = () => {
                   fullWidth={false}
                   onClick={handleOpen}
                   variant="outlined"
-                  disabled={!_ethereumProvider}
+                  disabled={!account}
                 >
                   Link BrightID
                 </Button>
@@ -352,7 +348,7 @@ const Home: NextPage = () => {
                     account && checkVerification(account)
                   }}
                   variant="outlined"
-                  disabled={!_ethereumProvider}
+                  disabled={!account}
                 >
                   Check Verification
                 </Button>
@@ -367,7 +363,7 @@ const Home: NextPage = () => {
                   fullWidth={false}
                   onClick={generateIdentity}
                   variant="outlined"
-                  disabled={!_ethereumProvider}
+                  disabled={verified === false}
                 >
                   Generate Identity
                 </Button>
@@ -382,15 +378,16 @@ const Home: NextPage = () => {
                   fullWidth={false}
                   onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
-                  disabled={!_ethereumProvider}
+                  disabled={!_identityCommitment}
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
                 </Button>
               </StepContent>
               {_transactionHash && (
                 <Typography variant="body1">
-                  You're {_hasJoined ? "leave" : "join"} onChain group
-                  transaction sent successfully.<br/> Check the&nbsp;
+                  Your onchain group {_hasJoined ? "leave" : "join"}
+                  transaction sent successfully.
+                  <br /> Check the&nbsp;
                   <Link
                     href={"https://ropsten.etherscan.io/tx/" + _transactionHash}
                     underline="hover"
