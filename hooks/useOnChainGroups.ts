@@ -6,11 +6,11 @@ import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
 
 const contract = new Contract(
-  "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", //0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A
+  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", //ropsten: 0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
-  `https://ropsten.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
+  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
 )
 
 // const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
@@ -37,7 +37,8 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "3" // utils.formatBytes32String("brightid")
+  const groupId = "62726967687469647631"
+  // utils.formatBytes32String("brightid") : 0x6272696768746964763100000000000000000000000000000000000000000000
   const [_loading, setLoading] = useState<boolean>(false)
   const [_transactionHash, setTransactionHash] = useState<string>("")
 
