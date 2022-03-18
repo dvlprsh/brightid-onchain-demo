@@ -5,6 +5,7 @@ import { LoadingButton } from "@mui/lab"
 import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
 import { Modal } from "@mui/material"
+import { providers, Signer, ethers } from "ethers"
 import {
   Paper,
   Box,
@@ -38,15 +39,15 @@ const useStyles = makeStyles((theme: Theme) =>
       top: "50%",
       left: "50%",
       transform: "translate(-50%, -50%)",
-      width:"300px",
-      height:"300px",
-      backgroundColor: "white",
+      width: "300px",
+      height: "300px",
+      backgroundColor: "white"
     },
     qrcode: {
-      position:"absolute",
+      position: "absolute",
       top: "50%",
       left: "50%",
-      transform: "translate(-50%, -50%)",
+      transform: "translate(-50%, -50%)"
     }
   })
 )
@@ -64,15 +65,18 @@ const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 
 interface memberData {
-  identityCommitment: string;
+  identityCommitment: string
 }
 interface subgraphData {
-  id: string,
+  id: string
   memebers: memberData[]
 }
 
+const GROUP_ID = "103"
+
 const Home: NextPage = () => {
   const classes = useStyles()
+
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
   const [_error, setError] = useState<boolean>(false)
@@ -81,6 +85,8 @@ const Home: NextPage = () => {
   const [url, setUrl] = useState<string>()
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
+  const [_signer, setSigner] = useState<Signer>()
+  const [_hasJoined, setHasJoined] = useState<boolean>(false)
 
   const {
     groupId,
@@ -90,35 +96,46 @@ const Home: NextPage = () => {
     leaveGroup,
     loading
   } = useOnChainGroups()
-  
+
   useEffect(() => {
     ;(async function IIFE() {
-        if (!_ethereumProvider) {
-            const ethereumProvider = (await detectEthereumProvider()) as any
+      if (!_ethereumProvider) {
+        const ethereumProvider = (await detectEthereumProvider()) as any
 
-            if (ethereumProvider) {
-                setEthereumProvider(ethereumProvider)
-            } else {
-                console.error("Please install Metamask!")
-            }
+        if (ethereumProvider) {
+          setEthereumProvider(ethereumProvider)
+
+          const ethersProvider = new ethers.providers.Web3Provider(
+            ethereumProvider
+          )
+          const signer = ethersProvider && ethersProvider.getSigner()
+          setSigner(signer)
         } else {
-            const accounts = await _ethereumProvider.request({ method: "eth_accounts" })
-            setAccount(accounts)
-            setUrl(`brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`)
-
-            if (accounts[0]) {
-                setActiveStep(1)
-            }
-
-            _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
-                if (newAccounts.length === 0) {
-                    setActiveStep(0)
-                }
-            })
+          console.error("Please install Metamask!")
         }
+      } else {
+        const accounts = await _ethereumProvider.request({
+          method: "eth_accounts"
+        })
+        const account = accounts[0]
+        setAccount(account)
+        setUrl(
+          `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
+        )
+
+        if (account) {
+          setActiveStep(1)
+        }
+
+        _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
+          if (newAccounts.length === 0) {
+            setActiveStep(0)
+          }
+        })
+      }
     })()
   }, [_ethereumProvider])
-  
+
   async function connect() {
     await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
@@ -133,41 +150,62 @@ const Home: NextPage = () => {
   }
 
   async function getBrightIdUserData(address: string) {
-    const response = await fetch(`https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`)
+    const response = await fetch(
+      `https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`
+    )
     return response.json()
   }
 
-  const checkVerification = useCallback(async (address:string) => {
+  const checkVerification = useCallback(async (address: string) => {
     const brightIdUser = await getBrightIdUserData(address)
-    setVerified(brightIdUser.data?.unique)
+    const isVerified = brightIdUser.data?.unique
+    isVerified && setActiveStep(2)
   }, [])
 
   const getGroupData = async () => {
-    const endPoint = "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
+    const endPoint =
+      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
     const query = "{onchainGroups(orderBy:id){id,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({query})
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
     })
     return response.json()
   }
 
-  const printMembers = useCallback(async (currentGroup: string) => {
-      const queryData = await getGroupData()
-      const groupMembers = queryData.data.onchainGroups.filter( (v: subgraphData) => v.id === currentGroup)
-      const identityCommitmentsList = groupMembers[0].members.map( (v:memberData) => BigInt(v.identityCommitment))
-      return identityCommitmentsList
-  },[])
-  
+  const getMembers = useCallback(async (currentGroup: string) => {
+    const queryData = await getGroupData()
+    const groupMembers = queryData.data.onchainGroups.filter(
+      (v: subgraphData) => v.id === currentGroup
+    )
+
+    const identityCommitmentsList = groupMembers[0].members.map(
+      (v: memberData) => BigInt(v.identityCommitment)
+    )
+
+    return identityCommitmentsList
+  }, [])
+
+  const generateIdentity = async () => {
+    if (!_signer) return
+
+    const identityCommitment = await retrieveIdentityCommitment(_signer)
+    const joinedMembers = await getMembers(GROUP_ID)
+    const hasJoined = joinedMembers.includes(identityCommitment)
+
+    setHasJoined(hasJoined)
+    identityCommitment && setActiveStep(3)
+  }
+
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(false)
   }
-  function handleOpen(){
+  function handleOpen() {
     setOpen(true)
   }
-  function handleClose(){
+  function handleClose() {
     setOpen(false)
   }
 
@@ -227,6 +265,21 @@ const Home: NextPage = () => {
                   disabled={!_ethereumProvider}
                 >
                   Check Verification
+                </Button>
+              </StepContent>
+            </Step>
+            <Step>
+              <StepLabel error={!!_error}>
+                Generate you Semaphore identity
+              </StepLabel>
+              <StepContent style={{ width: 400 }}>
+                <Button
+                  fullWidth={false}
+                  onClick={generateIdentity}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  Generate Identity
                 </Button>
               </StepContent>
             </Step>
