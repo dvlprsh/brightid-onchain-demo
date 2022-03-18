@@ -1,34 +1,44 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<p align="center">
+    <h1 align="center">
+        BrightID onchain group
+    </h1>
+    <p align="center">Interep onchain group(BrightID) demo page</p>
+</p>
 
-## Getting Started
+This is a demo page that allows users to join/leave BrightID onchain group.
+You can Link your BrightID account and Ethereum address by taking the QRcode with BrightID mobile app. 
+Then you can join or leave the BrightID onchain group.
 
-First, run the development server:
+---
+
+## Install
+
+Clone this repository and install the dependencies:
 
 ```bash
-npm run dev
-# or
+git clone https://github.com/dvlprsh/interep-onchain-demo.git
+cd interep-onchain-demo
+yarn # or `npm i`
+```
+
+## Usage
+
+### Running test
+
+```bash
+yarn test
+```
+
+### Running page locally
+
+run `yarn dev` (or `npm run dev`)
+```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Join/Leave group
+First, you need a BrightID account and should link it to the Interep with a QR code.
+You can find more details about BrightID app in [BrightID docs](https://brightid.gitbook.io/brightid/).
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+After Linking your account, you can join/leave BrightID onchain Interep group in this page.
+You can find more details about Interep onchain group in [Interep docs](https://docs.interep.link/guides/onchain-groups).
