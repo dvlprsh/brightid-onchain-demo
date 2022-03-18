@@ -72,7 +72,6 @@ interface subgraphData {
   memebers: memberData[]
 }
 
-const GROUP_ID = "103"
 
 const Home: NextPage = () => {
   const classes = useStyles()
@@ -86,7 +85,7 @@ const Home: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
-  const [_hasJoined, setHasJoined] = useState<boolean>(false)
+  const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
 
   const {
@@ -175,14 +174,14 @@ const Home: NextPage = () => {
     return response.json()
   }
 
-  const getMembers = useCallback(async (currentGroup: string) => {
+  const getMembers = useCallback(async () => {
     const queryData = await getGroupData()
     const groupMembers = queryData.data.onchainGroups.filter(
-      (v: subgraphData) => v.id === currentGroup
+      (v: subgraphData) => v.id === groupId
     )
 
     const identityCommitmentsList = groupMembers[0].members.map(
-      (v: memberData) => BigInt(v.identityCommitment)
+      (v: memberData) => v.identityCommitment
     )
 
     return identityCommitmentsList
@@ -194,7 +193,7 @@ const Home: NextPage = () => {
 
     if (!identityCommitment) return
 
-    const joinedMembers = await getMembers(GROUP_ID)
+    const joinedMembers = await getMembers()
     const hasJoined = joinedMembers.includes(identityCommitment)
 
     setHasJoined(hasJoined)
@@ -207,12 +206,17 @@ const Home: NextPage = () => {
 
     const userSignature = await signMessage(_signer, _identityCommitment)
 
-    if (await joinGroup(_identityCommitment)) {
-      setHasJoined(true)
-    }
+    if (await joinGroup(_identityCommitment)) setHasJoined(undefined)
   }
 
-  const leaveOnChainroup = () => {}
+  const leaveOnchainGroup = async () => {
+    if (!_signer || !_identityCommitment) return
+
+    const userSignature = await signMessage(_signer, _identityCommitment)
+    const IdentityCommitments = await getMembers()
+
+    if (await leaveGroup(IdentityCommitments,_identityCommitment)) setHasJoined(undefined)
+  }
 
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
@@ -305,7 +309,7 @@ const Home: NextPage = () => {
               <StepContent style={{ width: 400 }}>
                 <Button
                   fullWidth={false}
-                  onClick={_hasJoined ? leaveOnChainroup : joinOnChainGroup}
+                  onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
                   disabled={!_ethereumProvider}
                 >
