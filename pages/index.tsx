@@ -182,19 +182,25 @@ const Home: NextPage = () => {
     return response.json()
   }
 
-  const checkVerification = useCallback(async (address: string) => {
-    try {
-      const brightIdUser = await getBrightIdUserData(address)
-      const isVerified = brightIdUser.data?.unique
-      if (isVerified) {
-        setActiveStep(2)
-      } else {
-        throw Error("You're not linked with BrightID correctly.")
+  const checkVerification = useCallback(
+    async (address: string) => {
+      try {
+        const brightIdUser = await getBrightIdUserData(address)
+        const isVerified = brightIdUser.data?.unique
+        if (isVerified) {
+          setActiveStep(2)
+        } else {
+          throw Error("You're not linked with BrightID correctly.")
+        }
+      } catch (e) {
+        setError({
+          errorStep: _activeStep,
+          message: e.toString()
+        })
       }
-    } catch (e) {
-      setError({ errorStep: _activeStep, message: e.message })
-    }
-  }, [_activeStep])
+    },
+    [_activeStep]
+  )
 
   const getSubgraphData = async () => {
     const endPoint =
