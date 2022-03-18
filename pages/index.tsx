@@ -160,7 +160,7 @@ const Home: NextPage = () => {
       method: "wallet_switchEthereumChain",
       params: [
         {
-          chainId: "0x3" //kovan: "0x2a"
+          chainId: "0x2a" //ropsten: "0x3"
         }
       ]
     })
@@ -197,7 +197,8 @@ const Home: NextPage = () => {
 
   const getSubgraphData = async () => {
     const endPoint =
-      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
+      "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan"
+      //"https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
     const query =
       "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
@@ -389,7 +390,7 @@ const Home: NextPage = () => {
                   transaction sent successfully.
                   <br /> Check the&nbsp;
                   <Link
-                    href={"https://ropsten.etherscan.io/tx/" + _transactionHash}
+                    href={"https://kovan.etherscan.io/tx/" + _transactionHash}
                     underline="hover"
                     rel="noreferrer"
                     target="_blank"
