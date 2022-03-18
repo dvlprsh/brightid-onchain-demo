@@ -285,7 +285,7 @@ const Home: NextPage = () => {
             </Step>
             <Step>
               <StepLabel error={!!_error}>
-                Generate you Semaphore identity
+                Generate your Semaphore identity
               </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <Button
