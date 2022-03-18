@@ -103,7 +103,7 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionHash, setTransactionHash] = React.useState<string>()
+  const [_transactionHash, setTransactionHash] = useState<string>("")
 
   const {
     groupId,
@@ -111,6 +111,7 @@ const Home: NextPage = () => {
     retrieveIdentityCommitment,
     joinGroup,
     leaveGroup,
+    transactionHash,
     loading
   } = useOnChainGroups()
 
@@ -219,14 +220,14 @@ const Home: NextPage = () => {
 
       if (!identityCommitment) return
 
-      const joinedMembers = await (await getGroupData()).identityCommitmentsList
+      const joinedMembers = (await getGroupData()).identityCommitmentsList
       const hasJoined = joinedMembers.includes(identityCommitment)
 
       setHasJoined(hasJoined)
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
     } catch (e) {
-      setError({ errorStep: _activeStep })
+      setError({ errorStep: _activeStep, message: "generate identity Failed - "+ e })
     }
   }
 
@@ -236,9 +237,14 @@ const Home: NextPage = () => {
 
       const userSignature = await signMessage(_signer, _identityCommitment)
 
-      if (await joinGroup(_identityCommitment)) setHasJoined(undefined)
+      if(userSignature){
+        if (await joinGroup(_identityCommitment)){
+          setHasJoined(undefined)
+          setTransactionHash(transactionHash)
+        }
+      }
     } catch (e) {
-      setError({ errorStep: _activeStep })
+      setError({ errorStep: _activeStep, message: "join group Failed - "+ e })
     }
   }
 
@@ -247,14 +253,17 @@ const Home: NextPage = () => {
       if (!_signer || !_identityCommitment) return
 
       const userSignature = await signMessage(_signer, _identityCommitment)
-      const IdentityCommitments = await (
-        await getGroupData()
-      ).identityCommitmentsList
+      const root = (await getGroupData()).root
+      const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
-      if (await leaveGroup(IdentityCommitments, _identityCommitment))
-        setHasJoined(undefined)
+      if(userSignature){
+        if (await leaveGroup(root, IdentityCommitments, _identityCommitment)){
+          setHasJoined(undefined)
+          setTransactionHash(transactionHash)
+        }
+      }
     } catch (e) {
-      setError({ errorStep: _activeStep })
+      setError({ errorStep: _activeStep, message: "leave group Failed - "+ e })
     }
   }
 
@@ -362,10 +371,10 @@ const Home: NextPage = () => {
               </StepContent>
               {_transactionHash && (
                 <Typography variant="body1">
-                  You have {_hasJoined ? "left" : "joined"} onChain group
-                  successfully. Check the&nbsp;
+                  You're {_hasJoined ? "leave" : "join"} onChain group
+                  transaction sent successfully.<br/> Check the&nbsp;
                   <Link
-                    href={"https://kovan.etherscan.io/tx/" + _transactionHash}
+                    href={"https://ropsten.etherscan.io/tx/" + _transactionHash}
                     underline="hover"
                     rel="noreferrer"
                     target="_blank"
@@ -379,22 +388,6 @@ const Home: NextPage = () => {
           </Stepper>
           {_error && (
             <Paper className={classes.results} sx={{ p: 3 }}>
-              <Typography variant="body1">
-                Sorry, there was an error in the creation of your Semaphore
-                proof.
-              </Typography>
-              <List sx={{ mb: 0 }}>
-                <ListItem>
-                  <ListItemText secondary="• Make sure you have enough balance in your wallet." />
-                </ListItem>
-                <ListItemButton
-                  component="a"
-                  href={"https://kovan.etherscan.io/token/" + "contractAddress"}
-                  target="_blank"
-                >
-                  <ListItemText secondary="• Click here to check if you have already joined the group." />
-                </ListItemButton>
-              </List>
               {_error.message && (
                 <Typography variant="body1">{_error.message}</Typography>
               )}
