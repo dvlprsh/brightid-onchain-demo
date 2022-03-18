@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import { NoSsr } from "@mui/material"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import { LoadingButton } from "@mui/lab"
@@ -271,137 +272,139 @@ const Home: NextPage = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Paper className={classes.container} elevation={0} square={true}>
-        <Box className={classes.content}>
-          <Typography variant="h4" sx={{ mb: 2 }}>
-            Interep On-chain group
-          </Typography>
+      <NoSsr>
+        <Paper className={classes.container} elevation={0} square={true}>
+          <Box className={classes.content}>
+            <Typography variant="h4" sx={{ mb: 2 }}>
+              Interep On-chain group
+            </Typography>
 
-          <Typography variant="body1" sx={{ mb: 4 }}>
-            Link to BrightId
-          </Typography>
+            <Typography variant="body1" sx={{ mb: 4 }}>
+              Link to BrightId
+            </Typography>
 
-          <Stepper activeStep={_activeStep} orientation="vertical">
-            <Step>
-              <StepLabel error={_error?.errorStep === 0}>
-                Connect your wallet with Metamask
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth
-                  onClick={() => connect()}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Connect wallet
-                </Button>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 1}>
-                Link BrightID to Interep
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Modal open={_open} onClose={handleClose}>
-                  <Box className={classes.qrmodal}>
-                    {url ? (
-                      <QRCode value={url} className={classes.qrcode} />
-                    ) : (
-                      <Typography>error</Typography>
-                    )}
-                  </Box>
-                </Modal>
-                <Button
-                  fullWidth={false}
-                  onClick={handleOpen}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Link BrightID
-                </Button>
-                <Button
-                  fullWidth={false}
-                  onClick={() => {
-                    account && checkVerification(account)
-                  }}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Check Verification
-                </Button>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 2}>
-                Generate your Semaphore identity
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth={false}
-                  onClick={generateIdentity}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Generate Identity
-                </Button>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 3}>
-                {_hasJoined ? "Leave" : "Join"} Group
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth={false}
-                  onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
+            <Stepper activeStep={_activeStep} orientation="vertical">
+              <Step>
+                <StepLabel error={_error?.errorStep === 0}>
+                  Connect your wallet with Metamask
+                </StepLabel>
+                <StepContent style={{ width: 400 }}>
+                  <Button
+                    fullWidth
+                    onClick={() => connect()}
+                    variant="outlined"
+                    disabled={!_ethereumProvider}
+                  >
+                    Connect wallet
+                  </Button>
+                </StepContent>
+              </Step>
+              <Step>
+                <StepLabel error={_error?.errorStep === 1}>
+                  Link BrightID to Interep
+                </StepLabel>
+                <StepContent style={{ width: 400 }}>
+                  <Modal open={_open} onClose={handleClose}>
+                    <Box className={classes.qrmodal}>
+                      {url ? (
+                        <QRCode value={url} className={classes.qrcode} />
+                      ) : (
+                        <Typography>error</Typography>
+                      )}
+                    </Box>
+                  </Modal>
+                  <Button
+                    fullWidth={false}
+                    onClick={handleOpen}
+                    variant="outlined"
+                    disabled={!_ethereumProvider}
+                  >
+                    Link BrightID
+                  </Button>
+                  <Button
+                    fullWidth={false}
+                    onClick={() => {
+                      account && checkVerification(account)
+                    }}
+                    variant="outlined"
+                    disabled={!_ethereumProvider}
+                  >
+                    Check Verification
+                  </Button>
+                </StepContent>
+              </Step>
+              <Step>
+                <StepLabel error={_error?.errorStep === 2}>
+                  Generate your Semaphore identity
+                </StepLabel>
+                <StepContent style={{ width: 400 }}>
+                  <Button
+                    fullWidth={false}
+                    onClick={generateIdentity}
+                    variant="outlined"
+                    disabled={!_ethereumProvider}
+                  >
+                    Generate Identity
+                  </Button>
+                </StepContent>
+              </Step>
+              <Step>
+                <StepLabel error={_error?.errorStep === 3}>
                   {_hasJoined ? "Leave" : "Join"} Group
-                </Button>
-              </StepContent>
-              {_transactionHash && (
+                </StepLabel>
+                <StepContent style={{ width: 400 }}>
+                  <Button
+                    fullWidth={false}
+                    onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
+                    variant="outlined"
+                    disabled={!_ethereumProvider}
+                  >
+                    {_hasJoined ? "Leave" : "Join"} Group
+                  </Button>
+                </StepContent>
+                {_transactionHash && (
+                  <Typography variant="body1">
+                    You have {_hasJoined ? "left" : "joined"} onChain group
+                    successfully. Check the&nbsp;
+                    <Link
+                      href={"https://kovan.etherscan.io/tx/" + _transactionHash}
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                    !
+                  </Typography>
+                )}
+              </Step>
+            </Stepper>
+            {_error && (
+              <Paper className={classes.results} sx={{ p: 3 }}>
                 <Typography variant="body1">
-                  You have {_hasJoined ? "left" : "joined"} onChain group
-                  successfully. Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + _transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
+                  Sorry, there was an error in the creation of your Semaphore
+                  proof.
+                </Typography>
+                <List sx={{ mb: 0 }}>
+                  <ListItem>
+                    <ListItemText secondary="• Make sure you have enough balance in your wallet." />
+                  </ListItem>
+                  <ListItemButton
+                    component="a"
+                    href={"https://kovan.etherscan.io/token/" + "contractAddress"}
                     target="_blank"
                   >
-                    transaction
-                  </Link>
-                  !
-                </Typography>
-              )}
-            </Step>
-          </Stepper>
-          {_error && (
-            <Paper className={classes.results} sx={{ p: 3 }}>
-              <Typography variant="body1">
-                Sorry, there was an error in the creation of your Semaphore
-                proof.
-              </Typography>
-              <List sx={{ mb: 0 }}>
-                <ListItem>
-                  <ListItemText secondary="• Make sure you have enough balance in your wallet." />
-                </ListItem>
-                <ListItemButton
-                  component="a"
-                  href={"https://kovan.etherscan.io/token/" + "contractAddress"}
-                  target="_blank"
-                >
-                  <ListItemText secondary="• Click here to check if you have already joined the group." />
-                </ListItemButton>
-              </List>
-              {_error.message && (
-                <Typography variant="body1">{_error.message}</Typography>
-              )}
-            </Paper>
-          )}
-        </Box>
-      </Paper>
+                    <ListItemText secondary="• Click here to check if you have already joined the group." />
+                  </ListItemButton>
+                </List>
+                {_error.message && (
+                  <Typography variant="body1">{_error.message}</Typography>
+                )}
+              </Paper>
+            )}
+          </Box>
+        </Paper>
+      </NoSsr>
     </ThemeProvider>
   )
 }
