@@ -96,7 +96,6 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionHash, setTransactionHash] = useState<string>("")
 
   const {
     groupId,
@@ -255,10 +254,7 @@ const Home: NextPage = () => {
       const userSignature = await signMessage(_signer, _identityCommitment)
 
       if (userSignature) {
-        if (await joinGroup(_identityCommitment)) {
-          setHasJoined(undefined)
-          setTransactionHash(transactionHash)
-        }
+        await joinGroup(_identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
@@ -275,10 +271,7 @@ const Home: NextPage = () => {
       const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
       if (userSignature) {
-        if (await leaveGroup(root, IdentityCommitments, _identityCommitment)) {
-          setHasJoined(undefined)
-          setTransactionHash(transactionHash)
-        }
+        await leaveGroup(root, IdentityCommitments, _identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
@@ -386,13 +379,13 @@ const Home: NextPage = () => {
                   {_hasJoined ? "Leave" : "Join"} Group
                 </LoadingButton>
               </StepContent>
-              {_transactionHash && (
+              {transactionHash && (
                 <Typography variant="body1">
                   Your onchain group {_hasJoined ? "leave" : "join"}
                   transaction sent successfully.
                   <br /> Check the&nbsp;
                   <Link
-                    href={"https://kovan.etherscan.io/tx/" + _transactionHash}
+                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
                     underline="hover"
                     rel="noreferrer"
                     target="_blank"

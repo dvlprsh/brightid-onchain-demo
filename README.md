@@ -18,8 +18,8 @@ You can try the demo here: https://brightid-on-chain.netlify.app/
 Clone this repository and install the dependencies:
 
 ```bash
-git clone https://github.com/dvlprsh/interep-onchain-demo.git
-cd interep-onchain-demo
+git clone https://github.com/dvlprsh/brightid-onchain-demo.git
+cd brightid-onchain-demo
 yarn # or `npm i`
 ```
 

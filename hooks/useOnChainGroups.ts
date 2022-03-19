@@ -13,14 +13,8 @@ const provider = new providers.JsonRpcProvider(
   `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
 )
 
-// const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
-// const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
-// // Mnemonic
-
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
-// Privatekey
-//const adminAddress = adminWallet.getAddress()
 
 type ReturnParameters = {
   groupId: string
@@ -37,8 +31,8 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "62726967687469647631"
-  // utils.formatBytes32String("brightid") : 0x6272696768746964763100000000000000000000000000000000000000000000
+  const groupId = "627269676874696476310"
+  // utils.formatBytes32String("brightidv1") : 0x6272696768746964763100000000000000000000000000000000000000000000
   const [_loading, setLoading] = useState<boolean>(false)
   const [_transactionHash, setTransactionHash] = useState<string>("")
 
