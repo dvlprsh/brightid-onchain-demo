@@ -18,7 +18,7 @@ const provider = new providers.JsonRpcProvider(
 // // Mnemonic
 
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
-const adminWallet = new Wallet(ADMIN, provider)
+const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 // Privatekey
 //const adminAddress = adminWallet.getAddress()
 
@@ -62,31 +62,33 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const retrieveIdentityCommitment = useCallback(
     async (signer: Signer): Promise<string | null> => {
-        setLoading(true)
+      setLoading(true)
 
-        const identity = await createIdentity(
-          (message) => signer.signMessage(message),
-          groupId
-        )
+      const identity = await createIdentity(
+        (message) => signer.signMessage(message),
+        groupId
+      )
 
-        const identityCommitment = identity.genIdentityCommitment()
-        setLoading(false)
+      const identityCommitment = identity.genIdentityCommitment()
+      setLoading(false)
 
-        return identityCommitment.toString()
+      return identityCommitment.toString()
     },
     []
   )
 
   const joinGroup = useCallback(
     async (identityCommitment: string): Promise<true | null> => {
-        setLoading(true)
+      if (!adminWallet) return null
 
-        const transaction = await contract
-                .connect(adminWallet)
-                .addMember(groupId, identityCommitment)
+      setLoading(true)
 
-        setTransactionHash(transaction.hash)
-        setLoading(false)
+      const transaction = await contract
+        .connect(adminWallet)
+        .addMember(groupId, identityCommitment)
+
+      setTransactionHash(transaction.hash)
+      setLoading(false)
       return true
     },
     []
@@ -96,27 +98,35 @@ export default function useOnChainGroups(): ReturnParameters {
     async (
       root: string,
       members: string[],
-      IdentityCommitment: string,
+      IdentityCommitment: string
     ): Promise<true | null> => {
-        setLoading(true)
+      if (!adminWallet) return null
 
-        const merkleproof = generateMerkleProof(20,BigInt(0),members,IdentityCommitment)
+      setLoading(true)
 
-        if(merkleproof.root != root) throw "root different. your transaction must be failed"
+      const merkleproof = generateMerkleProof(
+        20,
+        BigInt(0),
+        members,
+        IdentityCommitment
+      )
 
-        const transaction = await contract
-                    .connect(adminWallet)
-                    .removeMember(
-                      groupId,
-                      IdentityCommitment,
-                      merkleproof.siblings,
-                      merkleproof.pathIndices
-                    )
+      if (merkleproof.root != root)
+        throw "root different. your transaction must be failed"
 
-        setTransactionHash(transaction.hash)
-        setLoading(false)
+      const transaction = await contract
+        .connect(adminWallet)
+        .removeMember(
+          groupId,
+          IdentityCommitment,
+          merkleproof.siblings,
+          merkleproof.pathIndices
+        )
 
-        return true
+      setTransactionHash(transaction.hash)
+      setLoading(false)
+
+      return true
     },
     []
   )
