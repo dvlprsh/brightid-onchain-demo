@@ -5,6 +5,7 @@ import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
 import { Modal, Link } from "@mui/material"
 import { Signer, ethers } from "ethers"
+import { LoadingButton } from "@mui/lab"
 import {
   Paper,
   Box,
@@ -198,7 +199,7 @@ const Home: NextPage = () => {
   const getSubgraphData = async () => {
     const endPoint =
       "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan"
-      //"https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
+
     const query =
       "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
     const response = await fetch(endPoint, {
@@ -250,6 +251,7 @@ const Home: NextPage = () => {
     try {
       if (!_signer || !_identityCommitment) return
 
+      setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
 
       if (userSignature) {
@@ -267,6 +269,7 @@ const Home: NextPage = () => {
     try {
       if (!_signer || !_identityCommitment) return
 
+      setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
       const root = (await getGroupData()).root
       const IdentityCommitments = (await getGroupData()).identityCommitmentsList
@@ -336,7 +339,6 @@ const Home: NextPage = () => {
                   </Box>
                 </Modal>
                 <Button
-                  fullWidth={false}
                   onClick={handleOpen}
                   variant="outlined"
                   disabled={!account}
@@ -344,7 +346,6 @@ const Home: NextPage = () => {
                   Link BrightID
                 </Button>
                 <Button
-                  fullWidth={false}
                   onClick={() => {
                     account && checkVerification(account)
                   }}
@@ -361,7 +362,7 @@ const Home: NextPage = () => {
               </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <Button
-                  fullWidth={false}
+                  fullWidth
                   onClick={generateIdentity}
                   variant="outlined"
                   disabled={verified === false}
@@ -375,14 +376,15 @@ const Home: NextPage = () => {
                 {_hasJoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth={false}
+                <LoadingButton
+                  fullWidth
                   onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
                   disabled={!_identityCommitment}
+                  loading={_loading}
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
-                </Button>
+                </LoadingButton>
               </StepContent>
               {_transactionHash && (
                 <Typography variant="body1">
