@@ -254,9 +254,7 @@ const Home: NextPage = () => {
       const userSignature = await signMessage(_signer, _identityCommitment)
 
       if (userSignature) {
-        if (await joinGroup(_identityCommitment)) {
-          setHasJoined(undefined)
-        }
+        await joinGroup(_identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
@@ -273,9 +271,7 @@ const Home: NextPage = () => {
       const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
       if (userSignature) {
-        if (await leaveGroup(root, IdentityCommitments, _identityCommitment)) {
-          setHasJoined(undefined)
-        }
+        await leaveGroup(root, IdentityCommitments, _identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
