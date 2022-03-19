@@ -13,14 +13,8 @@ const provider = new providers.JsonRpcProvider(
   `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
 )
 
-// const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
-// const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
-// // Mnemonic
-
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
-// Privatekey
-//const adminAddress = adminWallet.getAddress()
 
 type ReturnParameters = {
   groupId: string
