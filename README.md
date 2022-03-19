@@ -9,6 +9,8 @@ This is a demo page that allows users to join/leave BrightID onchain group.
 You can Link your BrightID account and Ethereum address by taking the QRcode with BrightID mobile app. 
 Then you can join or leave the BrightID onchain group.
 
+You can try the demo here: https://brightid-on-chain.netlify.app/
+
 ---
 
 ## Install
