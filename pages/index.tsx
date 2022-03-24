@@ -16,8 +16,9 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import useOnChainGroups from "hooks/useOnChainGroups"
+import getNextConfig from "next/config"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -69,6 +70,7 @@ const theme = createTheme({
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
+const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
 interface memberData {
   identityCommitment: string
@@ -96,6 +98,8 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
+  const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
+  const pending = useRef<boolean>()
 
   const {
     groupId,
@@ -160,7 +164,8 @@ const Home: NextPage = () => {
       method: "wallet_switchEthereumChain",
       params: [
         {
-          chainId: "0x2a" //ropsten: "0x3"
+          chainId: "0x2a" // kovan
+          // chainId: "0x3" // ropsten
         }
       ]
     })
@@ -197,7 +202,8 @@ const Home: NextPage = () => {
 
   const getSubgraphData = async () => {
     const endPoint =
-      "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan"
+      // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
+      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
 
     const query =
       "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
@@ -224,6 +230,66 @@ const Home: NextPage = () => {
 
     return { identityCommitmentsList, admin, root }
   }, [])
+
+  async function getTransactionStatus(txHash: string) {
+    const response = await fetch(
+      // `https://api-kovan.etherscan.io/api?module=transaction&action=getstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
+      `https://api-ropsten.etherscan.io/api?module=transaction&action=getstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
+    )
+    return response.json()
+  }
+
+  const checkTransactionStatus = useCallback(
+    async (txHash: string) => {
+      try {
+        let callStatus = async () => {
+          const transactionStatus = await getTransactionStatus(txHash)
+          const result = transactionStatus.result
+          console.log(result)
+          if (result === "False") {
+
+            pending.current = true
+            console.log("pending")
+
+          } else if (result.isError === "0") {
+
+            pending.current = false
+            setTransactionSuccess(true)
+            console.log("successful")
+
+          } else if (result.isError === "1") {
+
+            pending.current = false
+            setTransactionSuccess(false)
+            console.log("failed")
+            
+          } else {
+            setTransactionSuccess(false)
+            console.log("error")
+          }
+        }
+
+        const interval = async () => {
+          await callStatus()
+          if (pending.current === false) {
+            console.log("stop")
+            return
+          } else if (pending.current === true) {
+            console.log("your transaction is pending")
+            setTimeout(interval, 1000)
+          }
+        }
+
+        interval()
+      } catch (e) {
+        setError({
+          errorStep: _activeStep,
+          message: `${e}`
+        })
+      }
+    },
+    [_activeStep]
+  )
 
   const generateIdentity = async () => {
     try {
@@ -255,6 +321,7 @@ const Home: NextPage = () => {
 
       if (userSignature) {
         await joinGroup(_identityCommitment)
+        checkTransactionStatus(transactionHash)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
@@ -272,6 +339,7 @@ const Home: NextPage = () => {
 
       if (userSignature) {
         await leaveGroup(root, IdentityCommitments, _identityCommitment)
+        checkTransactionStatus(transactionHash)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
@@ -393,6 +461,20 @@ const Home: NextPage = () => {
                     transaction
                   </Link>
                   !
+                </Typography>
+              )}
+              {transactionHash && _transactionSuccess === true && (
+                <Typography variant="body1">
+                  Transaction successful
+                  <br /> Check the&nbsp;
+                  <Link
+                    href={"https://ropsten.etherscan.io/tx/" + transactionHash}
+                    underline="hover"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    transaction
+                  </Link>
                 </Typography>
               )}
             </Step>
