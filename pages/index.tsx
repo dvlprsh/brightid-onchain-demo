@@ -233,8 +233,8 @@ const Home: NextPage = () => {
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
-      // `https://api-kovan.etherscan.io/api?module=transaction&action=getstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
-      `https://api-ropsten.etherscan.io/api?module=transaction&action=getstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
+      // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
+      `https://api-ropsten.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
     )
     return response.json()
   }
@@ -244,39 +244,38 @@ const Home: NextPage = () => {
       try {
         let callStatus = async () => {
           const transactionStatus = await getTransactionStatus(txHash)
-          const result = transactionStatus.result
-          console.log(result)
-          if (result === "False") {
+          const status = transactionStatus.result.status
 
-            pending.current = true
-            console.log("pending")
-
-          } else if (result.isError === "0") {
-
+          if (status === "1") {
             pending.current = false
             setTransactionSuccess(true)
-            console.log("successful")
-
-          } else if (result.isError === "1") {
-
+            setLoading(false)
+            handleNext()
+            console.log("transaction success")
+          } else if (status === "0") {
             pending.current = false
             setTransactionSuccess(false)
-            console.log("failed")
-            
+            setLoading(false)
+            handleNext()
+            console.log("transaction failed")
+          } else if (status === "") {
+            pending.current = true
+            console.log("still pending")
           } else {
-            setTransactionSuccess(false)
-            console.log("error")
+            pending.current = true
+            console.log("no txhash yet")
           }
         }
 
         const interval = async () => {
           await callStatus()
-          if (pending.current === false) {
-            console.log("stop")
-            return
-          } else if (pending.current === true) {
+          if (pending.current === true) {
             console.log("your transaction is pending")
             setTimeout(interval, 1000)
+            return
+          } else if (pending.current === false) {
+            console.log("transaction confirmed")
+            clearTimeout()
           }
         }
 
@@ -321,10 +320,10 @@ const Home: NextPage = () => {
 
       if (userSignature) {
         await joinGroup(_identityCommitment)
-        checkTransactionStatus(transactionHash)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
+      setLoading(false)
     }
   }
 
@@ -339,10 +338,10 @@ const Home: NextPage = () => {
 
       if (userSignature) {
         await leaveGroup(root, IdentityCommitments, _identityCommitment)
-        checkTransactionStatus(transactionHash)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
+      setLoading(false)
     }
   }
 
@@ -446,37 +445,57 @@ const Home: NextPage = () => {
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
                 </LoadingButton>
+                {transactionHash && checkTransactionStatus(transactionHash) && (
+                  <Typography variant="body1">
+                    Your transaction is now pending...
+                    <br />
+                    Please wait (Check the&nbsp;
+                    <Link
+                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
+                      href={
+                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                      }
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                    )
+                  </Typography>
+                )}
               </StepContent>
-              {transactionHash && (
-                <Typography variant="body1">
-                  Your onchain group {_hasJoined ? "leave" : "join"}
-                  transaction sent successfully.
-                  <br /> Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                  !
-                </Typography>
-              )}
-              {transactionHash && _transactionSuccess === true && (
-                <Typography variant="body1">
-                  Transaction successful
-                  <br /> Check the&nbsp;
-                  <Link
-                    href={"https://ropsten.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                </Typography>
-              )}
+            </Step>
+            <Step>
+              <StepContent>
+                {transactionHash && _transactionSuccess === true ? (
+                  <Typography variant="body1">
+                    Transaction success
+                    <br /> Check the&nbsp;
+                    <Link
+                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
+                      href={
+                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                      }
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                  </Typography>
+                ) : (
+                  <Typography variant="body1">uncaught error</Typography>
+                )}
+                <Button
+                  fullWidth
+                  onClick={() => setActiveStep(0)}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  Home
+                </Button>
+              </StepContent>
             </Step>
           </Stepper>
           {_error && (

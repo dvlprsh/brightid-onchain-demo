@@ -33,7 +33,7 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "246"
+  const groupId = "2"
   // const groupId = "627269676874696476310"
   // utils.formatBytes32String("brightidv1") : 0x6272696768746964763100000000000000000000000000000000000000000000
   const [_loading, setLoading] = useState<boolean>(false)
