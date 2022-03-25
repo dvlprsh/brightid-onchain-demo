@@ -4604,6 +4604,14 @@ slice-ansi@^5.0.0:
     ansi-styles "^6.0.0"
     is-fullwidth-code-point "^4.0.0"
 
+soltypes@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/soltypes/-/soltypes-2.0.0.tgz#5d252b54cf308fae9616f949c6227d5c10861cd6"
+  integrity sha512-9HIM9ErTeDs4qoxOXnxbxyoS93I2HjIiPqva5/XJZjlO841Jgh7Szsx0xpdXlZXtuYe+Q1M1s75D2C0kY11ivw==
+  dependencies:
+    "@ethersproject/bignumber" "^5.6.0"
+    js-sha3 "^0.8.0"
+
 source-map-js@^1.0.1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/source-map-js/-/source-map-js-1.0.2.tgz"
