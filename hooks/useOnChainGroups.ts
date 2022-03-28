@@ -33,7 +33,7 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "2"
+  const groupId = "1"
   // const groupId = "627269676874696476310"
   // utils.formatBytes32String("brightidv1") : 0x6272696768746964763100000000000000000000000000000000000000000000
   const [_loading, setLoading] = useState<boolean>(false)
@@ -82,7 +82,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       const transaction = await contract
         .connect(adminWallet)
-        .addMember(groupId, identityCommitment)
+        .addMember(groupId, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
 
       setTransactionHash(transaction.hash)
       setLoading(false)
@@ -117,7 +117,8 @@ export default function useOnChainGroups(): ReturnParameters {
           groupId,
           IdentityCommitment,
           merkleproof.siblings,
-          merkleproof.pathIndices
+          merkleproof.pathIndices,
+          {gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000}
         )
 
       setTransactionHash(transaction.hash)

@@ -100,6 +100,7 @@ const Home: NextPage = () => {
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
   const pending = useRef<boolean>()
+  const transactionSuccess = useRef<boolean>()
 
   const {
     groupId,
@@ -248,19 +249,14 @@ const Home: NextPage = () => {
 
           if (status === "1") {
             pending.current = false
-            setTransactionSuccess(true)
-            setLoading(false)
-            handleNext()
+            transactionSuccess.current = true
             console.log("transaction success")
           } else if (status === "0") {
             pending.current = false
-            setTransactionSuccess(false)
-            setLoading(false)
-            handleNext()
+            transactionSuccess.current = false
             console.log("transaction failed")
           } else if (status === "") {
             pending.current = true
-            console.log("still pending")
           } else {
             pending.current = true
             console.log("no txhash yet")
@@ -272,14 +268,21 @@ const Home: NextPage = () => {
           if (pending.current === true) {
             console.log("your transaction is pending")
             setTimeout(interval, 1000)
-            return
           } else if (pending.current === false) {
             console.log("transaction confirmed")
             clearTimeout()
+            return true
           }
         }
-
-        interval()
+        
+        const handlePending = async () => {
+          const txConfirmed = await interval()
+          if (txConfirmed === true) {
+            setLoading(false)
+            handleNext()
+          }
+        }
+        handlePending()
       } catch (e) {
         setError({
           errorStep: _activeStep,
@@ -468,7 +471,7 @@ const Home: NextPage = () => {
             </Step>
             <Step>
               <StepContent>
-                {transactionHash && _transactionSuccess === true ? (
+                {transactionHash && (transactionSuccess.current === true) ? (
                   <Typography variant="body1">
                     Transaction success
                     <br /> Check the&nbsp;
