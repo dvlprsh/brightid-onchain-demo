@@ -17,6 +17,7 @@ import {
   StepContent
 } from "@mui/material"
 import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useInterval } from "usehooks-ts"
 import useOnChainGroups from "hooks/useOnChainGroups"
 import getNextConfig from "next/config"
 
@@ -99,8 +100,9 @@ const Home: NextPage = () => {
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
-  const pending = useRef<boolean>()
-  const transactionSuccess = useRef<boolean>()
+  const [_pending, setPending] = useState<boolean>()
+  // const pending = useRef<boolean>()
+  // const transactionSuccess = useRef<boolean>()
 
   const {
     groupId,
@@ -230,7 +232,7 @@ const Home: NextPage = () => {
     )
 
     return { identityCommitmentsList, admin, root }
-  }, [])
+  }, [groupId])
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
@@ -240,57 +242,36 @@ const Home: NextPage = () => {
     return response.json()
   }
 
-  const checkTransactionStatus = useCallback(
-    async (txHash: string) => {
-      try {
-        let callStatus = async () => {
-          const transactionStatus = await getTransactionStatus(txHash)
-          const status = transactionStatus.result.status
+  const checkTransactionStatus = useCallback(async (txHash: string) => {
+    const transactionStatus = await getTransactionStatus(txHash)
+    const status = transactionStatus.result.status
 
-          if (status === "1") {
-            pending.current = false
-            transactionSuccess.current = true
-            console.log("transaction success")
-          } else if (status === "0") {
-            pending.current = false
-            transactionSuccess.current = false
-            console.log("transaction failed")
-          } else if (status === "") {
-            pending.current = true
-          } else {
-            pending.current = true
-            console.log("no txhash yet")
-          }
-        }
+    if (status === "1") {
+      setPending(false)
+      setTransactionSuccess(true)
+      setLoading(false)
+      handleNext()
+      console.log("transaction success")
+    } else if (status === "0") {
+      setPending(false)
+      setTransactionSuccess(false)
+      setLoading(false)
+      handleNext()
+      console.log("transaction failed")
+    } else if (status === "") {
+      setPending(true)
+    } else {
+      setPending(true)
+      console.log("no txhash yet")
+    }
+  }, [])
 
-        const interval = async () => {
-          await callStatus()
-          if (pending.current === true) {
-            console.log("your transaction is pending")
-            setTimeout(interval, 1000)
-          } else if (pending.current === false) {
-            console.log("transaction confirmed")
-            clearTimeout()
-            return true
-          }
-        }
-        
-        const handlePending = async () => {
-          const txConfirmed = await interval()
-          if (txConfirmed === true) {
-            setLoading(false)
-            handleNext()
-          }
-        }
-        handlePending()
-      } catch (e) {
-        setError({
-          errorStep: _activeStep,
-          message: `${e}`
-        })
-      }
+  useInterval(
+    () => {
+      const txHash = transactionHash
+      checkTransactionStatus(txHash)
     },
-    [_activeStep]
+    transactionHash && _pending === true ? 2000 : null
   )
 
   const generateIdentity = async () => {
@@ -448,7 +429,7 @@ const Home: NextPage = () => {
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
                 </LoadingButton>
-                {transactionHash && checkTransactionStatus(transactionHash) && (
+                {transactionHash && setPending(true) && (
                   <Typography variant="body1">
                     Your transaction is now pending...
                     <br />
@@ -471,7 +452,7 @@ const Home: NextPage = () => {
             </Step>
             <Step>
               <StepContent>
-                {transactionHash && (transactionSuccess.current === true) ? (
+                {transactionHash && _transactionSuccess === true ? (
                   <Typography variant="body1">
                     Transaction success
                     <br /> Check the&nbsp;
