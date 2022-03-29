@@ -123,6 +123,10 @@ const Home: NextPage = () => {
   }, [_activeStep, account])
 
   useEffect(() => {
+    !!transactionHash && setPending(true)
+  }, [transactionHash])
+
+  useEffect(() => {
     ;(async function IIFE() {
       if (!_ethereumProvider) {
         const ethereumProvider = (await detectEthereumProvider()) as any
