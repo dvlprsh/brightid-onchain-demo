@@ -200,7 +200,7 @@ const Home: NextPage = () => {
       "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan"
 
     const query =
-      "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
+      "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
     const response = await fetch(endPoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
