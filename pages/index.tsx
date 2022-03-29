@@ -429,7 +429,7 @@ const Home: NextPage = () => {
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
                 </LoadingButton>
-                {transactionHash && setPending(true) && (
+                {transactionHash && _pending && (
                   <Typography variant="body1">
                     Your transaction is now pending...
                     <br />
