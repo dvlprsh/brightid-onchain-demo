@@ -4,7 +4,8 @@ const nextConfig = {
   publicRuntimeConfig: {
     // Will be available on both server and client
     adminprivatekey: process.env.BRIGHTID_GROUP_ADMIN_PRIVATE_KEY,
-    infuraApiKey: process.env.INFURA_API_KEY
+    infuraApiKey: process.env.INFURA_API_KEY,
+    etherscanApiKey: process.env.ETHERSCAN_API_KEY
   }
 }
 

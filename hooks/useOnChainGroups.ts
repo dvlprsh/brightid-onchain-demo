@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Signer, Contract, providers, Wallet } from "ethers"
+import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
@@ -9,11 +9,13 @@ import { toUtf8Bytes, concat, hexlify } from "ethers/lib/utils"
 import { Bytes31 } from 'soltypes'
 
 const contract = new Contract(
-  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", //ropsten: 0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A
+    // "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
+    "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", // ropsten
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
-  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
+  // `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
+  `https://ropsten.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // ropsten
 )
 
 //const GROUP_NAME = "brightidv1"
@@ -91,7 +93,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       const transaction = await contract
         .connect(adminWallet)
-        .addMember(groupId, identityCommitment)
+        .addMember(groupId, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
 
       setTransactionHash(transaction.hash)
       setLoading(false)
@@ -126,7 +128,8 @@ export default function useOnChainGroups(): ReturnParameters {
           groupId,
           IdentityCommitment,
           merkleproof.siblings,
-          merkleproof.pathIndices
+          merkleproof.pathIndices,
+          {gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000}
         )
 
       setTransactionHash(transaction.hash)
