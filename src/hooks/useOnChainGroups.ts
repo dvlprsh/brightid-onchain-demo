@@ -41,6 +41,7 @@ type ReturnParameters = {
     members: string[],
     identityCommitment: string
   ) => Promise<true | null>
+  proveMembership: (signer: Signer) => Promise<boolean | undefined>
   transactionHash: string
   loading: boolean
 }
@@ -140,12 +141,52 @@ export default function useOnChainGroups(): ReturnParameters {
     []
   )
 
+  const proveMembership = useCallback(
+    async (signer: Signer): Promise<boolean | undefined> => {
+      const identity = await createIdentity(
+        (message: string) => signer.signMessage(message),
+        groupId
+      )
+
+      // The external nullifier is the group id.
+      const externalNullifier = groupId
+      const signal = "on-chain-bright-id"
+
+      const zkFiles = {
+        wasmFilePath: "./semaphore.wasm",
+        zkeyFilePath: "./semaphore_final.zkey"
+      }
+
+      setLoading(true)
+
+      try {
+        const { publicSignals, solidityProof } = await createProof(
+          identity,
+          groupId,
+          externalNullifier,
+          signal,
+          zkFiles
+        )
+
+        console.log("solidityProof", solidityProof)
+
+        return !!solidityProof
+      } catch (error) {
+        console.error(error)
+      }
+
+      setLoading(false)
+    },
+    []
+  )
+
   return {
     groupId,
     retrieveIdentityCommitment,
     signMessage,
     joinGroup,
     leaveGroup,
+    proveMembership,
     transactionHash: _transactionHash,
     loading: _loading
   }

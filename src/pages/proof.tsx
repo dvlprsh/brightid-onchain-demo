@@ -105,17 +105,10 @@ const Proof: NextPage = () => {
     groupId,
     signMessage,
     retrieveIdentityCommitment,
+    proveMembership,
     transactionHash,
     loading
   } = useOnChainGroups()
-
-  useEffect(() => {
-    setError(undefined)
-
-    if (_activeStep === 1 && account) {
-      checkVerification(account)
-    }
-  }, [_activeStep, account])
 
   useEffect(() => {
     !!transactionHash && setPending(true)
@@ -180,27 +173,6 @@ const Proof: NextPage = () => {
     )
     return response.json()
   }
-
-  const checkVerification = useCallback(
-    async (address: string) => {
-      try {
-        const brightIdUser = await getBrightIdUserData(address)
-        const isVerified = brightIdUser.data?.unique
-        if (isVerified) {
-          setVerified(isVerified)
-          setActiveStep(2)
-        } else {
-          throw Error("You're not linked with BrightID correctly.")
-        }
-      } catch (e) {
-        setError({
-          errorStep: _activeStep,
-          message: `${e}`
-        })
-      }
-    },
-    [_activeStep]
-  )
 
   const getSubgraphData = async () => {
     const endPoint =
@@ -285,7 +257,7 @@ const Proof: NextPage = () => {
 
       setHasJoined(hasJoined)
       setIdentityCommitment(identityCommitment)
-      identityCommitment && setActiveStep(3)
+      identityCommitment && setActiveStep(2)
     } catch (e) {
       setError({
         errorStep: _activeStep,
@@ -294,13 +266,22 @@ const Proof: NextPage = () => {
     }
   }
 
-  const proofMembership = async () => {}
+  const getMembershipProof = async () => {
+    try {
+      const hasMembership = _signer && (await proveMembership(_signer))
+    } catch (e) {
+      setError({
+        errorStep: _activeStep,
+        message: "membership proof Failed - " + e
+      })
+    }
+  }
 
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(undefined)
   }
-  
+
   return (
     <Paper className={classes.container} elevation={0} square={true}>
       <Link
@@ -353,7 +334,7 @@ const Proof: NextPage = () => {
                 fullWidth
                 onClick={generateIdentity}
                 variant="outlined"
-                disabled={verified === false}
+                disabled={!account}
               >
                 Generate Identity
               </Button>
@@ -366,7 +347,7 @@ const Proof: NextPage = () => {
             <StepContent style={{ width: 400 }}>
               <LoadingButton
                 fullWidth
-                onClick={proofMembership}
+                onClick={getMembershipProof}
                 variant="outlined"
                 disabled={!_identityCommitment}
                 loading={_loading}
