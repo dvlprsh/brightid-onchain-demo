@@ -18,7 +18,7 @@ import {
 } from "@mui/material"
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useInterval } from "usehooks-ts"
-import useOnChainGroups from "hooks/useOnChainGroups"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 import getNextConfig from "next/config"
 
 
