@@ -16,8 +16,10 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useInterval } from "usehooks-ts"
 import useOnChainGroups from "hooks/useOnChainGroups"
+import getNextConfig from "next/config"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -69,6 +71,7 @@ const theme = createTheme({
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
+const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
 interface memberData {
   identityCommitment: string
@@ -96,6 +99,10 @@ const Home: NextPage = () => {
   const [_signer, setSigner] = useState<Signer>()
   const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
+  const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
+  const [_pending, setPending] = useState<boolean>()
+  // const pending = useRef<boolean>()
+  // const transactionSuccess = useRef<boolean>()
 
   const {
     groupId,
@@ -160,7 +167,8 @@ const Home: NextPage = () => {
       method: "wallet_switchEthereumChain",
       params: [
         {
-          chainId: "0x2a" //ropsten: "0x3"
+          chainId: "0x2a" // kovan
+          // chainId: "0x3" // ropsten
         }
       ]
     })
@@ -197,10 +205,11 @@ const Home: NextPage = () => {
 
   const getSubgraphData = async () => {
     const endPoint =
-      "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan"
+      // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
+      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
 
     const query =
-      "{onchainGroups(orderBy:id){id,admin,root,members{identityCommitment}}}"
+      "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
     const response = await fetch(endPoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -223,7 +232,47 @@ const Home: NextPage = () => {
     )
 
     return { identityCommitmentsList, admin, root }
+  }, [groupId])
+
+  async function getTransactionStatus(txHash: string) {
+    const response = await fetch(
+      // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
+      `https://api-ropsten.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
+    )
+    return response.json()
+  }
+
+  const checkTransactionStatus = useCallback(async (txHash: string) => {
+    const transactionStatus = await getTransactionStatus(txHash)
+    const status = transactionStatus.result.status
+
+    if (status === "1") {
+      setPending(false)
+      setTransactionSuccess(true)
+      setLoading(false)
+      handleNext()
+      console.log("transaction success")
+    } else if (status === "0") {
+      setPending(false)
+      setTransactionSuccess(false)
+      setLoading(false)
+      handleNext()
+      console.log("transaction failed")
+    } else if (status === "") {
+      setPending(true)
+    } else {
+      setPending(true)
+      console.log("no txhash yet")
+    }
   }, [])
+
+  useInterval(
+    () => {
+      const txHash = transactionHash
+      checkTransactionStatus(txHash)
+    },
+    transactionHash && _pending === true ? 2000 : null
+  )
 
   const generateIdentity = async () => {
     try {
@@ -258,6 +307,7 @@ const Home: NextPage = () => {
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
+      setLoading(false)
     }
   }
 
@@ -275,6 +325,7 @@ const Home: NextPage = () => {
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
+      setLoading(false)
     }
   }
 
@@ -378,23 +429,57 @@ const Home: NextPage = () => {
                 >
                   {_hasJoined ? "Leave" : "Join"} Group
                 </LoadingButton>
+                {transactionHash && setPending(true) && (
+                  <Typography variant="body1">
+                    Your transaction is now pending...
+                    <br />
+                    Please wait (Check the&nbsp;
+                    <Link
+                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
+                      href={
+                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                      }
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                    )
+                  </Typography>
+                )}
               </StepContent>
-              {transactionHash && (
-                <Typography variant="body1">
-                  Your onchain group {_hasJoined ? "leave" : "join"}
-                  transaction sent successfully.
-                  <br /> Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                  !
-                </Typography>
-              )}
+            </Step>
+            <Step>
+              <StepContent>
+                {transactionHash && _transactionSuccess === true ? (
+                  <Typography variant="body1">
+                    Transaction success
+                    <br /> Check the&nbsp;
+                    <Link
+                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
+                      href={
+                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                      }
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                  </Typography>
+                ) : (
+                  <Typography variant="body1">uncaught error</Typography>
+                )}
+                <Button
+                  fullWidth
+                  onClick={() => setActiveStep(0)}
+                  variant="outlined"
+                  disabled={!_ethereumProvider}
+                >
+                  Home
+                </Button>
+              </StepContent>
             </Step>
           </Stepper>
           {_error && (

@@ -1,20 +1,35 @@
 import { useCallback, useState } from "react"
-import { Signer, utils, Contract, providers, Wallet } from "ethers"
+import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
+import { HashZero } from "@ethersproject/constants"
+import { toUtf8Bytes, concat, hexlify } from "ethers/lib/utils"
+import { Bytes31 } from 'soltypes'
 
 const contract = new Contract(
-  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", //ropsten: 0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A
+  // "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
+  "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", // ropsten
   Interep.abi
 )
 const provider = new providers.JsonRpcProvider(
-  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}`
+  // `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
+  `https://ropsten.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // ropsten
 )
 
+//const GROUP_NAME = "brightidv1"
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
+
+function formatUint248String(text: string): string {
+  const bytes = toUtf8Bytes(text);
+  
+  if(bytes.length > 30) { throw new Error("byte31 string must be less than 31 bytes")}
+  
+  const hash = new Bytes31(hexlify(concat([bytes, HashZero]).slice(0, 31)))
+  return hash.toUint().toString()
+}
 
 type ReturnParameters = {
   groupId: string
@@ -31,8 +46,7 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "627269676874696476310"
-  // utils.formatBytes32String("brightidv1") : 0x6272696768746964763100000000000000000000000000000000000000000000
+  const groupId = formatUint248String("brightidv1") //173940653116352066111980355808565635588994233647684490854317820238565998592
   const [_loading, setLoading] = useState<boolean>(false)
   const [_transactionHash, setTransactionHash] = useState<string>("")
 
@@ -79,7 +93,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       const transaction = await contract
         .connect(adminWallet)
-        .addMember(groupId, identityCommitment)
+        .addMember(groupId, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
 
       setTransactionHash(transaction.hash)
       setLoading(false)
@@ -114,7 +128,8 @@ export default function useOnChainGroups(): ReturnParameters {
           groupId,
           IdentityCommitment,
           merkleproof.siblings,
-          merkleproof.pathIndices
+          merkleproof.pathIndices,
+          {gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000}
         )
 
       setTransactionHash(transaction.hash)
