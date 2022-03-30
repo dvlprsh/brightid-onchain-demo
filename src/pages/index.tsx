@@ -21,7 +21,6 @@ import { useInterval } from "usehooks-ts"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import getNextConfig from "next/config"
 
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
@@ -30,7 +29,8 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       justifyContent: "center",
       minHeight: "100vh",
-      flex: 1
+      flex: 1,
+      position: "relative",
     },
     content: {
       display: "flex",
@@ -219,7 +219,6 @@ const Home: NextPage = () => {
       // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
       "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
 
-
     const query =
       "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
     const response = await fetch(endPoint, {
@@ -355,7 +354,10 @@ const Home: NextPage = () => {
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
-        <Link href="https://github.com/dvlprsh/brightid-onchain-demo" className={classes.github}>
+        <Link
+          href="https://github.com/dvlprsh/brightid-onchain-demo"
+          className={classes.github}
+        >
           <svg width="80" height="80" viewBox="0 0 250 250">
             <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
             <path
