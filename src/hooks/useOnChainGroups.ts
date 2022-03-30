@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
+import createProof from "@interep/proof"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
