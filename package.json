@@ -29,6 +29,7 @@
     "soltypes": "^2.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.17.8",
     "@types/node": "17.0.21",
     "@types/qrcode.react": "^1.0.2",
     "@types/react": "17.0.40",

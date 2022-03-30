@@ -17,7 +17,7 @@ import {
   StepContent
 } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
-import useOnChainGroups from "hooks/useOnChainGroups"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
