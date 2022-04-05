@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react"
 import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
-import createProof from "@interep/proof"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
 import { HashZero } from "@ethersproject/constants"
 import { toUtf8Bytes, concat, hexlify } from "ethers/lib/utils"
-import { Bytes31 } from 'soltypes'
+import { Bytes31 } from "soltypes"
+import * as qs from "qs"
 
 const contract = new Contract(
     // "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
@@ -144,39 +144,36 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const proveMembership = useCallback(
     async (signer: Signer): Promise<boolean | undefined> => {
-      const identity = await createIdentity(
-        (message: string) => signer.signMessage(message),
-        groupId
+      const message = await signer.signMessage(
+        "Sign this message to generate your brightId Semaphore identity with key nonce: 0."
       )
-
-      // The external nullifier is the group id.
-      const externalNullifier = groupId
-      const signal = "on-chain-bright-id"
-
-      const zkFiles = {
-        wasmFilePath: "./semaphore.wasm",
-        zkeyFilePath: "./semaphore_final.zkey"
-      }
 
       setLoading(true)
 
       try {
-        const { publicSignals, solidityProof } = await createProof(
-          identity,
-          groupId,
-          externalNullifier,
-          signal,
-          zkFiles
-        )
+        const response = await fetch(
+          `/api/proof${qs.stringify(
+            {
+              message,
+              groupId,
+              signal: SIGNAL
+            },
+            { addQueryPrefix: true }
+          )}`,
+          {
+            method: "GET"
+          }
+        ).then((response) => response.json())
 
-        console.log("solidityProof", solidityProof)
+        if (response.error) {
+          throw new Error(response.error)
+        }
 
-        return !!solidityProof
+        return !!response.isVerified
       } catch (error) {
-        console.error(error)
+        setLoading(false)
+        throw error
       }
-
-      setLoading(false)
     },
     []
   )

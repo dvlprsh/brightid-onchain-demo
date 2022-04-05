@@ -272,7 +272,7 @@ const Proof: NextPage = () => {
     } catch (e) {
       setError({
         errorStep: _activeStep,
-        message: "membership proof Failed - " + e
+        message: "membership proof Failed - " + e.message
       })
     }
   }
