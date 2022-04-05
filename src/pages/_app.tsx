@@ -3,7 +3,7 @@ import type { AppProps } from "next/app"
 import Head from "next/head"
 import { ThemeProvider } from "@mui/material/styles"
 import theme from "src/styles/theme"
-import NavBar from "src/components/Navbar"
+import NavBar from "src/components/NavBar"
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
