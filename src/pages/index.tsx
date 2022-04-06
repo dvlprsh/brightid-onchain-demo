@@ -112,11 +112,15 @@ const Home: NextPage = () => {
   } = useOnChainGroups()
 
   useEffect(() => {
-    setError(undefined)
+    ;(async () => {
+      setError(undefined)
 
-    if (_activeStep === 1 && account) {
-      checkVerification(account)
-    }
+      try {
+        if (_activeStep === 1 && account) {
+          await checkVerification(account)
+        }
+      } catch (e) {}
+    })()
   }, [_activeStep, account])
 
   useEffect(() => {
@@ -182,27 +186,6 @@ const Home: NextPage = () => {
     )
     return response.json()
   }
-
-  const checkVerification = useCallback(
-    async (address: string) => {
-      try {
-        const brightIdUser = await getBrightIdUserData(address)
-        const isVerified = brightIdUser.data?.unique
-        if (isVerified) {
-          setVerified(isVerified)
-          setActiveStep(2)
-        } else {
-          throw Error("You're not linked with BrightID correctly.")
-        }
-      } catch (e) {
-        setError({
-          errorStep: _activeStep,
-          message: `${e}`
-        })
-      }
-    },
-    [_activeStep]
-  )
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
@@ -304,6 +287,29 @@ const Home: NextPage = () => {
     setOpen(false)
   }
 
+  const checkVerification = async (address: string) => {
+    const brightIdUser = await getBrightIdUserData(address)
+    const isVerified = brightIdUser.data?.unique
+
+    if (isVerified) {
+      setVerified(isVerified)
+      setActiveStep(2)
+    } else {
+      throw Error("You're not linked with BrightID correctly.")
+    }
+  }
+
+  const handleClickCheckVerification = async () => {
+    try {
+      account && (await checkVerification(account))
+    } catch (e) {
+      setError({
+        errorStep: _activeStep,
+        message: `${e}`
+      })
+    }
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
@@ -370,9 +376,7 @@ const Home: NextPage = () => {
                   Link BrightID
                 </Button>
                 <Button
-                  onClick={() => {
-                    account && checkVerification(account)
-                  }}
+                  onClick={handleClickCheckVerification}
                   variant="outlined"
                   disabled={!account}
                 >
