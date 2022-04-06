@@ -122,6 +122,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const api = new OnchainAPI()
       const { root } = await api.getGroup({ id:groupId })
       const members = await api.getGroupMembers({ groupId:groupId })
+      // order by index
       const identityCommitments = members.map((member:any) => member.identityCommitment)
 
       const merkleproof = generateMerkleProof(

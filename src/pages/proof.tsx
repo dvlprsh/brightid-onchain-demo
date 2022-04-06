@@ -1,5 +1,5 @@
 import type { NextPage } from "next"
-import { createTheme, Theme } from "@mui/material/styles"
+import { Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import detectEthereumProvider from "@metamask/detect-provider"
 import { Link } from "@mui/material"
@@ -68,8 +68,6 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-const NODE_URL = "http:%2f%2fnode.brightid.org"
-const CONTEXT = "interep"
 const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
 const Proof: NextPage = () => {
@@ -81,23 +79,16 @@ const Proof: NextPage = () => {
     { errorStep: number; message?: string } | undefined
   >()
   const [_loading, setLoading] = useState<boolean>(false)
-  const [_open, setOpen] = useState<boolean>(false)
-  const [url, setUrl] = useState<string>()
   const [account, setAccount] = useState<string>()
-  const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
-  const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
   const [_pending, setPending] = useState<boolean>()
 
   const {
-    groupId,
-    signMessage,
     retrieveIdentityCommitment,
     proveMembership,
     transactionHash,
-    loading
   } = useOnChainGroups()
 
   useEffect(() => {
@@ -126,9 +117,6 @@ const Proof: NextPage = () => {
         })
         const account = accounts[0]
         setAccount(account)
-        setUrl(
-          `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
-        )
 
         if (account) {
           setActiveStep(1)
@@ -144,7 +132,7 @@ const Proof: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -154,14 +142,8 @@ const Proof: NextPage = () => {
         }
       ]
     })
+    setAccount(accounts[0])
     handleNext()
-  }
-
-  async function getBrightIdUserData(address: string) {
-    const response = await fetch(
-      `https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`
-    )
-    return response.json()
   }
 
   async function getTransactionStatus(txHash: string) {
