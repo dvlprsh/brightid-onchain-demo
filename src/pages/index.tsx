@@ -21,7 +21,6 @@ import { useInterval } from "usehooks-ts"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import getNextConfig from "next/config"
 
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
@@ -30,7 +29,8 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       justifyContent: "center",
       minHeight: "100vh",
-      flex: 1
+      flex: 1,
+      position: "relative",
     },
     content: {
       display: "flex",
@@ -82,16 +82,6 @@ const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
-interface memberData {
-  identityCommitment: string
-}
-interface subgraphData {
-  id: string
-  admin: string
-  root: string
-  memebers: memberData[]
-}
-
 const Home: NextPage = () => {
   const classes = useStyles()
 
@@ -106,7 +96,6 @@ const Home: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
-  const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
   const [_pending, setPending] = useState<boolean>()
@@ -118,6 +107,7 @@ const Home: NextPage = () => {
     joinGroup,
     leaveGroup,
     transactionHash,
+    hasjoined,
     loading
   } = useOnChainGroups()
 
@@ -179,7 +169,6 @@ const Home: NextPage = () => {
       params: [
         {
           chainId: "0x2a" // kovan
-          // chainId: "0x3" // ropsten
         }
       ]
     })
@@ -213,38 +202,6 @@ const Home: NextPage = () => {
     },
     [_activeStep]
   )
-
-  const getSubgraphData = async () => {
-    const endPoint =
-      // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
-      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
-
-
-    const query =
-      "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
-    const response = await fetch(endPoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    })
-    return response.json()
-  }
-
-  const getGroupData = useCallback(async () => {
-    const queryData = await getSubgraphData()
-    const groupData = queryData.data.onchainGroups.filter(
-      (v: subgraphData) => v.id === groupId
-    )
-    const admin = groupData[0].admin
-
-    const root = groupData[0].root
-
-    const identityCommitmentsList = groupData[0].members.map(
-      (v: memberData) => v.identityCommitment
-    )
-
-    return { identityCommitmentsList, admin, root }
-  }, [groupId])
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
@@ -293,10 +250,6 @@ const Home: NextPage = () => {
 
       if (!identityCommitment) return
 
-      const joinedMembers = (await getGroupData()).identityCommitmentsList
-      const hasJoined = joinedMembers.includes(identityCommitment)
-
-      setHasJoined(hasJoined)
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
     } catch (e) {
@@ -329,11 +282,9 @@ const Home: NextPage = () => {
 
       setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
-      const root = (await getGroupData()).root
-      const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
       if (userSignature) {
-        await leaveGroup(root, IdentityCommitments, _identityCommitment)
+        await leaveGroup(_identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
@@ -355,7 +306,10 @@ const Home: NextPage = () => {
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
-        <Link href="https://github.com/dvlprsh/brightid-onchain-demo" className={classes.github}>
+        <Link
+          href="https://github.com/dvlprsh/brightid-onchain-demo"
+          className={classes.github}
+        >
           <svg width="80" height="80" viewBox="0 0 250 250">
             <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
             <path
@@ -442,17 +396,17 @@ const Home: NextPage = () => {
             </Step>
             <Step>
               <StepLabel error={_error?.errorStep === 3}>
-                {_hasJoined ? "Leave" : "Join"} Group
+                {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <LoadingButton
                   fullWidth
-                  onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
+                  onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
                   disabled={!_identityCommitment}
                   loading={_loading}
                 >
-                  {_hasJoined ? "Leave" : "Join"} Group
+                  {hasjoined ? "Leave" : "Join"} Group
                 </LoadingButton>
               </StepContent>
               {transactionHash && _pending && (
@@ -478,9 +432,8 @@ const Home: NextPage = () => {
                     Transaction success
                     <br /> Check the&nbsp;
                     <Link
-                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
                       href={
-                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                        "https://kovan.etherscan.io/tx/" + transactionHash
                       }
                       underline="hover"
                       rel="noreferrer"
