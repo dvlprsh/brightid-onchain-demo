@@ -163,7 +163,7 @@ const Home: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -172,6 +172,7 @@ const Home: NextPage = () => {
         }
       ]
     })
+    setAccount(accounts[0])
     handleNext()
   }
 
