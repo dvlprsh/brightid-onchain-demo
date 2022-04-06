@@ -13,8 +13,8 @@ const handleMembershipProof = async (req: NextApiRequest, res: NextApiResponse) 
 
   try {
     const zkFiles = {
-      wasmFilePath: "./semaphore.wasm",
-      zkeyFilePath: "./semaphore_final.zkey"
+      wasmFilePath: "./static/semaphore.wasm",
+      zkeyFilePath: "./static/semaphore_final.zkey"
     }
 
     const identity = new ZkIdentity(Strategy.MESSAGE, message)
