@@ -461,6 +461,14 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
           </Stepper>
+          <Paper className={classes.results} sx={{ p: 3 }}>
+            {account && (
+              <>
+                <Typography variant="subtitle1">Selected account</Typography>
+                <Typography variant="body1">{account}</Typography>
+              </>
+            )}
+          </Paper>
           {_error && (
             <Paper className={classes.results} sx={{ p: 3 }}>
               {_error.message && (
