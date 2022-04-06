@@ -72,16 +72,6 @@ const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
-interface memberData {
-  identityCommitment: string
-}
-interface subgraphData {
-  id: string
-  admin: string
-  root: string
-  memebers: memberData[]
-}
-
 const Proof: NextPage = () => {
   const classes = useStyles()
 
@@ -174,37 +164,6 @@ const Proof: NextPage = () => {
     return response.json()
   }
 
-  const getSubgraphData = async () => {
-    const endPoint =
-      // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
-      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
-
-    const query =
-      "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
-    const response = await fetch(endPoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    })
-    return response.json()
-  }
-
-  const getGroupData = useCallback(async () => {
-    const queryData = await getSubgraphData()
-    const groupData = queryData.data.onchainGroups.filter(
-      (v: subgraphData) => v.id === groupId
-    )
-    const admin = groupData[0].admin
-
-    const root = groupData[0].root
-
-    const identityCommitmentsList = groupData[0].members.map(
-      (v: memberData) => v.identityCommitment
-    )
-
-    return { identityCommitmentsList, admin, root }
-  }, [groupId])
-
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
       // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
@@ -252,10 +211,6 @@ const Proof: NextPage = () => {
 
       if (!identityCommitment) return
 
-      const joinedMembers = (await getGroupData()).identityCommitmentsList
-      const hasJoined = joinedMembers.includes(identityCommitment)
-
-      setHasJoined(hasJoined)
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(2)
     } catch (e) {
@@ -269,6 +224,7 @@ const Proof: NextPage = () => {
   const getMembershipProof = async () => {
     try {
       const hasMembership = _signer && (await proveMembership(_signer))
+      console.log(hasMembership)
     } catch (e) {
       setError({
         errorStep: _activeStep,
