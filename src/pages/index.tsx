@@ -3,7 +3,7 @@ import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
-import { Modal, Link } from "@mui/material"
+import { Link } from "@mui/material"
 import { Signer, ethers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
@@ -30,27 +30,20 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "center",
       minHeight: "100vh",
       flex: 1,
-      position: "relative",
+      position: "relative"
     },
     content: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center"
     },
-    qrmodal: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: "300px",
-      height: "300px",
-      backgroundColor: "white"
-    },
     qrcode: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)"
+      margin: 20
+    },
+    stepWrapper: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     },
     results: {
       position: "relative",
@@ -65,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: "0",
       border: "0",
       right: "0"
-    }
+    },
   })
 )
 
@@ -91,7 +84,6 @@ const Home: NextPage = () => {
     { errorStep: number; message?: string } | undefined
   >()
   const [_loading, setLoading] = useState<boolean>(false)
-  const [_open, setOpen] = useState<boolean>(false)
   const [url, setUrl] = useState<string>()
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
@@ -280,12 +272,6 @@ const Home: NextPage = () => {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(undefined)
   }
-  function handleOpen() {
-    setOpen(true)
-  }
-  function handleClose() {
-    setOpen(false)
-  }
 
   const checkVerification = async (address: string) => {
     const brightIdUser = await getBrightIdUserData(address)
@@ -359,29 +345,21 @@ const Home: NextPage = () => {
                 Link BrightID to Interep
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                <Modal open={_open} onClose={handleClose}>
-                  <Box className={classes.qrmodal}>
-                    {url ? (
-                      <QRCode value={url} className={classes.qrcode} />
-                    ) : (
-                      <Typography>error</Typography>
-                    )}
-                  </Box>
-                </Modal>
-                <Button
-                  onClick={handleOpen}
-                  variant="outlined"
-                  disabled={!account}
-                >
-                  Link BrightID
-                </Button>
-                <Button
-                  onClick={handleClickCheckVerification}
-                  variant="outlined"
-                  disabled={!account}
-                >
-                  Check Verification
-                </Button>
+                <Paper className={classes.stepWrapper} sx={{ p: 3 }}>
+                  <Typography variant="h5">Link BrightID</Typography>
+                  {url ? (
+                    <QRCode value={url} className={classes.qrcode} />
+                  ) : (
+                    <Typography>error</Typography>
+                  )}
+                  <Button
+                    onClick={handleClickCheckVerification}
+                    variant="outlined"
+                    disabled={!account}
+                  >
+                    Check Verification
+                  </Button>
+                </Paper>
               </StepContent>
             </Step>
             <Step>
