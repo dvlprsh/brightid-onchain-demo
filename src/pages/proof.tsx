@@ -138,7 +138,6 @@ const Proof: NextPage = () => {
       params: [
         {
           chainId: "0x2a" // kovan
-          // chainId: "0x3" // ropsten
         }
       ]
     })
@@ -148,8 +147,7 @@ const Proof: NextPage = () => {
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
-      // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
-      `https://api-ropsten.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
+      `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
     )
     return response.json()
   }
@@ -316,8 +314,7 @@ const Proof: NextPage = () => {
                   Transaction success
                   <br /> Check the&nbsp;
                   <Link
-                    // href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    href={"https://ropsten.etherscan.io/tx/" + transactionHash}
+                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
                     underline="hover"
                     rel="noreferrer"
                     target="_blank"
