@@ -10,19 +10,6 @@ import { toUtf8Bytes, concat, hexlify } from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
 import * as qs from "qs"
 
-const contract = new Contract(
-    "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
-  Interep.abi
-)
-const provider = new providers.JsonRpcProvider(
-  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
-)
-
-//const GROUP_NAME = "brightidv1"
-const SIGNAL = "hello"
-const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
-const adminWallet = ADMIN && new Wallet(ADMIN, provider)
-
 function formatUint248String(text: string): string {
   const bytes = toUtf8Bytes(text);
   
@@ -32,8 +19,21 @@ function formatUint248String(text: string): string {
   return hash.toUint().toString()
 }
 
+const contract = new Contract(
+    "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
+  Interep.abi
+)
+const provider = new providers.JsonRpcProvider(
+  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
+)
+
+//const GROUP_NAME = "brightidv1"
+const GROUPID = "627269676874696476310"//formatUint248String("brightidv1")
+const SIGNAL = "hello"
+const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
+const adminWallet = ADMIN && new Wallet(ADMIN, provider)
+
 type ReturnParameters = {
-  groupId: string
   signMessage: (signer: Signer, message: string) => Promise<string | null>
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
@@ -47,7 +47,6 @@ type ReturnParameters = {
 }
 
 export default function useOnChainGroups(): ReturnParameters {
-  const groupId = "627269676874696476310"//formatUint248String("brightidv1") //173940653116352066111980355808565635588994233647684490854317820238565998592
   const [_loading, setLoading] = useState<boolean>(false)
   const [_transactionHash, setTransactionHash] = useState<string>("")
   const [_hasjoined, setHasjoined] = useState<boolean>(false)
@@ -76,13 +75,14 @@ export default function useOnChainGroups(): ReturnParameters {
 
       const identity = await createIdentity(
         (message) => signer.signMessage(message),
-        groupId
+        GROUPID
       )
 
       const identityCommitment = identity.genIdentityCommitment()
 
       const api = new OnchainAPI()
-      const members = await api.getGroupMembers({ groupId:groupId })
+      const members = await api.getGroupMembers({ groupId:GROUPID })
+
       const identityCommitments = members.map((member:any) => member.identityCommitment)
 
       const hasJoined = identityCommitments.includes(identityCommitment.toString())
@@ -102,7 +102,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       const transaction = await contract
         .connect(adminWallet)
-        .addMember(groupId, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
+        .addMember(GROUPID, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
 
       setTransactionHash(transaction.hash)
       setLoading(false)
@@ -120,10 +120,11 @@ export default function useOnChainGroups(): ReturnParameters {
       setLoading(true)
 
       const api = new OnchainAPI()
-      const { root } = await api.getGroup({ id:groupId })
-      const members = await api.getGroupMembers({ groupId:groupId })
-      // order by index
-      const identityCommitments = members.map((member:any) => member.identityCommitment)
+      const { root } = await api.getGroup({ id:GROUPID })
+      const members = await api.getGroupMembers({ groupId:GROUPID })
+      
+      const indexedMembers = members.map((member:any) => [member.index, member.identityCommitment]).sort()
+      const identityCommitments = indexedMembers.map((member:any) => member[1])
 
       const merkleproof = generateMerkleProof(
         20,
@@ -132,13 +133,12 @@ export default function useOnChainGroups(): ReturnParameters {
         IdentityCommitment
       )
 
-      if (merkleproof.root != root)
-        throw "root different. your transaction must be failed"
+      if (merkleproof.root != root) throw "root different. your transaction must be failed"
 
       const transaction = await contract
         .connect(adminWallet)
         .removeMember(
-          groupId,
+          GROUPID,
           IdentityCommitment,
           merkleproof.siblings,
           merkleproof.pathIndices,
@@ -154,9 +154,9 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   const proveMembership = useCallback(
-    async (signer: Signer): Promise<boolean | undefined> => {
+    async (signer: Signer, nonce = 0): Promise<boolean | undefined> => {
       const message = await signer.signMessage(
-        "Sign this message to generate your brightId Semaphore identity with key nonce: 0."
+        `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
       )
 
       setLoading(true)
@@ -166,7 +166,7 @@ export default function useOnChainGroups(): ReturnParameters {
           `/api/proof${qs.stringify(
             {
               message,
-              groupId,
+              GROUPID,
               signal: SIGNAL
             },
             { addQueryPrefix: true }
@@ -190,7 +190,6 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   return {
-    groupId,
     retrieveIdentityCommitment,
     signMessage,
     joinGroup,
