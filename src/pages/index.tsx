@@ -3,7 +3,7 @@ import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
-import { Modal, Link } from "@mui/material"
+import { Link } from "@mui/material"
 import { Signer, ethers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
@@ -16,11 +16,10 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useInterval } from "usehooks-ts"
-import useOnChainGroups from "hooks/useOnChainGroups"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 import getNextConfig from "next/config"
-
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,34 +29,36 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       justifyContent: "center",
       minHeight: "100vh",
-      flex: 1
+      flex: 1,
+      position: "relative"
     },
     content: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center"
     },
-    qrmodal: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: "300px",
-      height: "300px",
-      backgroundColor: "white"
-    },
     qrcode: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)"
+      margin: 20
+    },
+    stepWrapper: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     },
     results: {
       position: "relative",
       marginTop: 20,
       width: 530,
       textAlign: "center"
-    }
+    },
+    github: {
+      color: "white",
+      fill: "#121212",
+      position: "absolute",
+      top: "0",
+      border: "0",
+      right: "0"
+    },
   })
 )
 
@@ -74,16 +75,6 @@ const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
-interface memberData {
-  identityCommitment: string
-}
-interface subgraphData {
-  id: string
-  admin: string
-  root: string
-  memebers: memberData[]
-}
-
 const Home: NextPage = () => {
   const classes = useStyles()
 
@@ -93,12 +84,10 @@ const Home: NextPage = () => {
     { errorStep: number; message?: string } | undefined
   >()
   const [_loading, setLoading] = useState<boolean>(false)
-  const [_open, setOpen] = useState<boolean>(false)
   const [url, setUrl] = useState<string>()
   const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
-  const [_hasJoined, setHasJoined] = useState<boolean>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
   const [_pending, setPending] = useState<boolean>()
@@ -110,15 +99,20 @@ const Home: NextPage = () => {
     joinGroup,
     leaveGroup,
     transactionHash,
+    hasjoined,
     loading
   } = useOnChainGroups()
 
   useEffect(() => {
-    setError(undefined)
+    ;(async () => {
+      setError(undefined)
 
-    if (_activeStep === 1 && account) {
-      checkVerification(account)
-    }
+      try {
+        if (_activeStep === 1 && account) {
+          await checkVerification(account)
+        }
+      } catch (e) {}
+    })()
   }, [_activeStep, account])
 
   useEffect(() => {
@@ -165,16 +159,16 @@ const Home: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
         {
           chainId: "0x2a" // kovan
-          // chainId: "0x3" // ropsten
         }
       ]
     })
+    setAccount(accounts[0])
     handleNext()
   }
 
@@ -184,59 +178,6 @@ const Home: NextPage = () => {
     )
     return response.json()
   }
-
-  const checkVerification = useCallback(
-    async (address: string) => {
-      try {
-        const brightIdUser = await getBrightIdUserData(address)
-        const isVerified = brightIdUser.data?.unique
-        if (isVerified) {
-          setVerified(isVerified)
-          setActiveStep(2)
-        } else {
-          throw Error("You're not linked with BrightID correctly.")
-        }
-      } catch (e) {
-        setError({
-          errorStep: _activeStep,
-          message: `${e}`
-        })
-      }
-    },
-    [_activeStep]
-  )
-
-  const getSubgraphData = async () => {
-    const endPoint =
-      // "https://api.thegraph.com/subgraphs/name/interep-project/interep-groups-kovan" // kovan
-      "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep" // ropsten
-
-
-    const query =
-      "{onchainGroups(orderBy:id){id,admin,root,members(orderBy:index){identityCommitment}}}"
-    const response = await fetch(endPoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    })
-    return response.json()
-  }
-
-  const getGroupData = useCallback(async () => {
-    const queryData = await getSubgraphData()
-    const groupData = queryData.data.onchainGroups.filter(
-      (v: subgraphData) => v.id === groupId
-    )
-    const admin = groupData[0].admin
-
-    const root = groupData[0].root
-
-    const identityCommitmentsList = groupData[0].members.map(
-      (v: memberData) => v.identityCommitment
-    )
-
-    return { identityCommitmentsList, admin, root }
-  }, [groupId])
 
   async function getTransactionStatus(txHash: string) {
     const response = await fetch(
@@ -285,10 +226,6 @@ const Home: NextPage = () => {
 
       if (!identityCommitment) return
 
-      const joinedMembers = (await getGroupData()).identityCommitmentsList
-      const hasJoined = joinedMembers.includes(identityCommitment)
-
-      setHasJoined(hasJoined)
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
     } catch (e) {
@@ -321,11 +258,9 @@ const Home: NextPage = () => {
 
       setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
-      const root = (await getGroupData()).root
-      const IdentityCommitments = (await getGroupData()).identityCommitmentsList
 
       if (userSignature) {
-        await leaveGroup(root, IdentityCommitments, _identityCommitment)
+        await leaveGroup(_identityCommitment)
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
@@ -337,16 +272,49 @@ const Home: NextPage = () => {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(undefined)
   }
-  function handleOpen() {
-    setOpen(true)
+
+  const checkVerification = async (address: string) => {
+    const brightIdUser = await getBrightIdUserData(address)
+    const isVerified = brightIdUser.data?.unique
+
+    if (isVerified) {
+      setVerified(isVerified)
+      setActiveStep(2)
+    } else {
+      throw Error("You're not linked with BrightID correctly.")
+    }
   }
-  function handleClose() {
-    setOpen(false)
+
+  const handleClickCheckVerification = async () => {
+    try {
+      account && (await checkVerification(account))
+    } catch (e) {
+      setError({
+        errorStep: _activeStep,
+        message: `${e}`
+      })
+    }
   }
 
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
+        <Link
+          href="https://github.com/dvlprsh/brightid-onchain-demo"
+          className={classes.github}
+        >
+          <svg width="80" height="80" viewBox="0 0 250 250">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path
+              fill="currentColor"
+              d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+            ></path>
+            <path
+              fill="currentColor"
+              d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+            ></path>
+          </svg>
+        </Link>
         <Box className={classes.content}>
           <Typography variant="h4" sx={{ mb: 2 }}>
             Interep On-chain group
@@ -377,31 +345,21 @@ const Home: NextPage = () => {
                 Link BrightID to Interep
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                <Modal open={_open} onClose={handleClose}>
-                  <Box className={classes.qrmodal}>
-                    {url ? (
-                      <QRCode value={url} className={classes.qrcode} />
-                    ) : (
-                      <Typography>error</Typography>
-                    )}
-                  </Box>
-                </Modal>
-                <Button
-                  onClick={handleOpen}
-                  variant="outlined"
-                  disabled={!account}
-                >
-                  Link BrightID
-                </Button>
-                <Button
-                  onClick={() => {
-                    account && checkVerification(account)
-                  }}
-                  variant="outlined"
-                  disabled={!account}
-                >
-                  Check Verification
-                </Button>
+                <Paper className={classes.stepWrapper} sx={{ p: 3 }}>
+                  <Typography variant="h5">Link BrightID</Typography>
+                  {url ? (
+                    <QRCode value={url} className={classes.qrcode} />
+                  ) : (
+                    <Typography>error</Typography>
+                  )}
+                  <Button
+                    onClick={handleClickCheckVerification}
+                    variant="outlined"
+                    disabled={!account}
+                  >
+                    Check Verification
+                  </Button>
+                </Paper>
               </StepContent>
             </Step>
             <Step>
@@ -421,17 +379,17 @@ const Home: NextPage = () => {
             </Step>
             <Step>
               <StepLabel error={_error?.errorStep === 3}>
-                {_hasJoined ? "Leave" : "Join"} Group
+                {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <LoadingButton
                   fullWidth
-                  onClick={_hasJoined ? leaveOnchainGroup : joinOnChainGroup}
+                  onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
                   disabled={!_identityCommitment}
                   loading={_loading}
                 >
-                  {_hasJoined ? "Leave" : "Join"} Group
+                  {hasjoined ? "Leave" : "Join"} Group
                 </LoadingButton>
               </StepContent>
               {transactionHash && _pending && (
@@ -457,9 +415,8 @@ const Home: NextPage = () => {
                     Transaction success
                     <br /> Check the&nbsp;
                     <Link
-                      // href={"https://kovan.etherscan.io/tx/" + transactionHash}
                       href={
-                        "https://ropsten.etherscan.io/tx/" + transactionHash
+                        "https://kovan.etherscan.io/tx/" + transactionHash
                       }
                       underline="hover"
                       rel="noreferrer"
@@ -482,6 +439,14 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
           </Stepper>
+          <Paper className={classes.results} sx={{ p: 3 }}>
+            {account && (
+              <>
+                <Typography variant="subtitle1">Selected account</Typography>
+                <Typography variant="body1">{account}</Typography>
+              </>
+            )}
+          </Paper>
           {_error && (
             <Paper className={classes.results} sx={{ p: 3 }}>
               {_error.message && (
