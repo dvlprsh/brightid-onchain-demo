@@ -19,12 +19,12 @@ function formatUint248String(text: string): string {
   return hash.toUint().toString()
 }
 
-const contract = new Contract(
-    "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
-  Interep.abi
-)
 const provider = new providers.JsonRpcProvider(
   `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
+)
+const contract = new Contract(
+  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
+Interep.abi, provider
 )
 
 //const GROUP_NAME = "brightidv1"
@@ -77,6 +77,19 @@ export default function useOnChainGroups(): ReturnParameters {
         (message) => signer.signMessage(message),
         GROUPID
       )
+
+      /***************test***************** */
+      
+      const startblock = "30391824"
+      const finalblock = await provider.getBlockNumber();
+
+      console.log(finalblock)
+      const filter = contract.filters.MemberAdded(utils.hexlify(BigInt(GROUPID)))
+      console.log(filter)
+      const hi = await contract.queryFilter(filter)
+      
+      console.log(hi)
+      /***************************** */
 
       const identityCommitment = identity.genIdentityCommitment()
 
