@@ -44,3 +44,19 @@ You can find more details about BrightID app in [BrightID docs](https://brightid
 
 After Linking your account, you can join/leave BrightID onchain Interep group in this page.
 You can find more details about Interep onchain group in [Interep docs](https://docs.interep.link/guides/onchain-groups).
+
+<br>
+
+## About brightidInterep contract
+Deployed contracts
+|                | Kovan                                                                                          |
+| -------        | ---------------------------------------------------------------------------------------------- |
+| Interep        | [0x5B8e...a6dc](https://kovan.etherscan.io/address/0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc) |
+| BrightidInterep| [0x2F0c...C1A3](https://kovan.etherscan.io/address/0x2f0c0a4afa1807e89328cf1eb451cb907f2dc1a3) |
+
+<br>
+BrightidInterep contract is on-chain verification about semaphore proof and brightID off-chain cerification(with BrightID node signed)<br><br>
+
+**Note, this is for Bright ID v5. Will be updated according to v6 coming soon<br>
+<br>
+Also, you can get an NFT badge for brightidv1. This is for testing, and can only mint once through semaphore proofs.
