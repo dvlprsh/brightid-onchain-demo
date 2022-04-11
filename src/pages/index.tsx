@@ -18,6 +18,7 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
+import useBrightId from "src/hooks/useBrightId"
 import getNextConfig from "next/config"
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -98,6 +99,8 @@ const Home: NextPage = () => {
     etherscanLink,
     transactionstatus
   } = useOnChainGroups()
+
+  const { getBrightIdUserData, selfSponsor, registerBrightId } = useBrightId()
 
   useEffect(() => {
     ;(async () => {
