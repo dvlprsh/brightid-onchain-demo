@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: "0",
       border: "0",
       right: "0"
-    },
+    }
   })
 )
 
@@ -89,18 +89,16 @@ const Home: NextPage = () => {
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
-  const [_pending, setPending] = useState<boolean>()
 
   const {
-    groupId,
     signMessage,
     retrieveIdentityCommitment,
     joinGroup,
     leaveGroup,
-    transactionHash,
     hasjoined,
-    loading
+    loading,
+    etherscanLink,
+    transactionstatus
   } = useOnChainGroups()
 
   useEffect(() => {
@@ -114,10 +112,6 @@ const Home: NextPage = () => {
       } catch (e) {}
     })()
   }, [_activeStep, account])
-
-  useEffect(() => {
-    !!transactionHash && setPending(true)
-  }, [transactionHash])
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -159,7 +153,9 @@ const Home: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({
+      method: "eth_requestAccounts"
+    })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -178,46 +174,6 @@ const Home: NextPage = () => {
     )
     return response.json()
   }
-
-  async function getTransactionStatus(txHash: string) {
-    const response = await fetch(
-      // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
-      `https://api-ropsten.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
-    )
-    return response.json()
-  }
-
-  const checkTransactionStatus = useCallback(async (txHash: string) => {
-    const transactionStatus = await getTransactionStatus(txHash)
-    const status = transactionStatus.result.status
-
-    if (status === "1") {
-      setPending(false)
-      setTransactionSuccess(true)
-      setLoading(false)
-      handleNext()
-      console.log("transaction success")
-    } else if (status === "0") {
-      setPending(false)
-      setTransactionSuccess(false)
-      setLoading(false)
-      handleNext()
-      console.log("transaction failed")
-    } else if (status === "") {
-      setPending(true)
-    } else {
-      setPending(true)
-      console.log("no txhash yet")
-    }
-  }, [])
-
-  useInterval(
-    () => {
-      const txHash = transactionHash
-      checkTransactionStatus(txHash)
-    },
-    transactionHash && _pending === true ? 2000 : null
-  )
 
   const generateIdentity = async () => {
     try {
@@ -294,6 +250,10 @@ const Home: NextPage = () => {
         message: `${e}`
       })
     }
+  }
+
+  const refreshPage = () => {
+    window.location.reload();
   }
 
   return (
@@ -386,57 +346,35 @@ const Home: NextPage = () => {
                   fullWidth
                   onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
                   variant="outlined"
-                  disabled={!_identityCommitment}
-                  loading={_loading}
+                  disabled={transactionstatus}
+                  loading={loading}
                 >
                   {hasjoined ? "Leave" : "Join"} Group
                 </LoadingButton>
               </StepContent>
-              {transactionHash && _pending && (
-                <Typography variant="body1">
-                  Your Transaction is now pending...
-                  <br /> Please wait (Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                  )
-                </Typography>
-              )}
-            </Step>
-            <Step>
-              <StepContent>
-                {transactionHash && _transactionSuccess === true ? (
+              {transactionstatus && (
+                <Box>
                   <Typography variant="body1">
-                    Transaction success
-                    <br /> Check the&nbsp;
+                    Transaction {transactionstatus ? "Successful" : "Failed"} (Check the&nbsp;
                     <Link
-                      href={
-                        "https://kovan.etherscan.io/tx/" + transactionHash
-                      }
+                      href={etherscanLink}
                       underline="hover"
                       rel="noreferrer"
                       target="_blank"
                     >
                       transaction
                     </Link>
+                    )
                   </Typography>
-                ) : (
-                  <Typography variant="body1">uncaught error</Typography>
-                )}
-                <Button
-                  fullWidth
-                  onClick={() => setActiveStep(0)}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Home
-                </Button>
-              </StepContent>
+                  <Button
+                    fullWidth={false}
+                    onClick={refreshPage}
+                    variant="outlined"
+                  >
+                    Home
+                  </Button>
+                </Box>
+              )}
             </Step>
           </Stepper>
           <Paper className={classes.results} sx={{ p: 3 }}>
