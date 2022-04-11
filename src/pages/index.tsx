@@ -16,8 +16,7 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
-import { useInterval } from "usehooks-ts"
+import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import getNextConfig from "next/config"
 
@@ -73,7 +72,6 @@ const theme = createTheme({
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
-const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
 const Home: NextPage = () => {
   const classes = useStyles()
