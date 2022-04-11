@@ -12,22 +12,34 @@ import { Bytes31 } from "soltypes"
 import * as qs from "qs"
 
 function formatUint248String(text: string): string {
-  const bytes = toUtf8Bytes(text);
-  
-  if(bytes.length > 30) { throw new Error("byte31 string must be less than 31 bytes")}
-  
+  const bytes = toUtf8Bytes(text)
+
+  if (bytes.length > 30) {
+    throw new Error("byte31 string must be less than 31 bytes")
+  }
+
   const hash = new Bytes31(hexlify(concat([bytes, HashZero]).slice(0, 31)))
   return hash.toUint().toString()
 }
 
 const provider = new providers.JsonRpcProvider(
-  `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
+  `https://kovan.infura.io/v3/${
+    getNextConfig().publicRuntimeConfig.infuraApiKey
+  }` // kovan
 )
-const InterepContract = new Contract("0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", Interep.abi, provider)
-const BrightidInterepContract = new Contract("0xc031D67F28FD31163aB91283bb4a3A977a26FBc0", BrightidInterep.abi, provider)
+const InterepContract = new Contract(
+  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc",
+  Interep.abi,
+  provider
+)
+const BrightidInterepContract = new Contract(
+  "0xc031D67F28FD31163aB91283bb4a3A977a26FBc0",
+  BrightidInterep.abi,
+  provider
+)
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "3535"//"627269676874696476310"//formatUint248String("brightidv1")
+const GROUPID = "35" //"627269676874696476310"//formatUint248String("brightidv1")
 const SIGNAL = "hello"
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
@@ -36,9 +48,7 @@ type ReturnParameters = {
   signMessage: (signer: Signer, message: string) => Promise<string | null>
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
-  leaveGroup: (
-    identityCommitment: string
-  ) => Promise<true | null>
+  leaveGroup: (identityCommitment: string) => Promise<true | null>
   proveMembership: (signer: Signer) => Promise<boolean | undefined>
   etherscanLink: string
   transactionstatus: boolean
@@ -80,24 +90,26 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       /***************test***************** */
-      
-      const startblock = 30391824  //30946902 BrightidInterep created
+
+      const startblock = 30391824 //30946902 BrightidInterep created
 
       //const filter = BrightidInterepContract.filters.saveMessage(externalNullifier)
-      const filter = InterepContract.filters.MemberAdded(utils.hexlify(BigInt(GROUPID)))
+      const filter = InterepContract.filters.MemberAdded(
+        utils.hexlify(BigInt(GROUPID))
+      )
       const hi = await InterepContract.queryFilter(filter, startblock)
 
       //first way
       let myArray1 = []
       console.log(hi)
-      for(let i = 0; i < hi.length; i++){
+      for (let i = 0; i < hi.length; i++) {
         myArray1.push(hi[i].args?.[1])
       }
       console.log(myArray1)
 
       //second way
       let myArray2 = []
-      for(let i = 0; i< hi.length; i++){
+      for (let i = 0; i < hi.length; i++) {
         myArray2.push(hi[i].data)
       }
       console.log(myArray2)
@@ -107,13 +119,17 @@ export default function useOnChainGroups(): ReturnParameters {
       const identityCommitment = identity.genIdentityCommitment()
 
       const api = new OnchainAPI()
-      const members = await api.getGroupMembers({ groupId:GROUPID })
+      const members = await api.getGroupMembers({ groupId: GROUPID })
 
-      const identityCommitments = members.map((member:any) => member.identityCommitment)
+      const identityCommitments = members.map(
+        (member: any) => member.identityCommitment
+      )
 
-      const hasJoined = identityCommitments.includes(identityCommitment.toString())
+      const hasJoined = identityCommitments.includes(
+        identityCommitment.toString()
+      )
       setHasjoined(hasJoined)
-      
+
       setLoading(false)
       return identityCommitment.toString()
     },
@@ -126,17 +142,22 @@ export default function useOnChainGroups(): ReturnParameters {
 
       setLoading(true)
 
-      const transaction = await InterepContract
-        .connect(adminWallet)
-        .addMember(GROUPID, identityCommitment,{gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000})
+      const transaction = await InterepContract.connect(adminWallet).addMember(
+        GROUPID,
+        identityCommitment,
+        { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 }
+      )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
       console.log(receipt.status)
 
-      if(receipt.status) {setTransactionStatus(true)}
-      else {setTransactionStatus(false)}
+      if (receipt.status) {
+        setTransactionStatus(true)
+      } else {
+        setTransactionStatus(false)
+      }
 
-      setEtherscanLink("https://kovan.etherscan.io/tx/"+transaction.hash)
+      setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
       return true
     },
@@ -144,19 +165,19 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   const leaveGroup = useCallback(
-    async (
-      IdentityCommitment: string
-    ): Promise<true | null> => {
+    async (IdentityCommitment: string): Promise<true | null> => {
       if (!adminWallet) return null
 
       setLoading(true)
 
       const api = new OnchainAPI()
-      const { root } = await api.getGroup({ id:GROUPID })
-      const members = await api.getGroupMembers({ groupId:GROUPID })
-      
-      const indexedMembers = members.map((member:any) => [member.index, member.identityCommitment]).sort()
-      const identityCommitments = indexedMembers.map((member:any) => member[1])
+      const { root } = await api.getGroup({ id: GROUPID })
+      const members = await api.getGroupMembers({ groupId: GROUPID })
+
+      const indexedMembers = members
+        .map((member: any) => [member.index, member.identityCommitment])
+        .sort()
+      const identityCommitments = indexedMembers.map((member: any) => member[1])
 
       const merkleproof = generateMerkleProof(
         20,
@@ -165,25 +186,29 @@ export default function useOnChainGroups(): ReturnParameters {
         IdentityCommitment
       )
 
-      if (merkleproof.root != root) throw "root different. your transaction must be failed"
+      if (merkleproof.root != root)
+        throw "root different. your transaction must be failed"
 
-      const transaction = await InterepContract
-        .connect(adminWallet)
-        .removeMember(
-          GROUPID,
-          IdentityCommitment,
-          merkleproof.siblings,
-          merkleproof.pathIndices,
-          {gasPrice: utils.parseUnits("10","gwei"), gasLimit: 3000000}
-        )
+      const transaction = await InterepContract.connect(
+        adminWallet
+      ).removeMember(
+        GROUPID,
+        IdentityCommitment,
+        merkleproof.siblings,
+        merkleproof.pathIndices,
+        { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 }
+      )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
       console.log(receipt.status)
 
-      if(receipt.status) {setTransactionStatus(true)}
-      else {setTransactionStatus(false)}
+      if (receipt.status) {
+        setTransactionStatus(true)
+      } else {
+        setTransactionStatus(false)
+      }
 
-      setEtherscanLink("https://kovan.etherscan.io/tx/"+transaction.hash)
+      setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
 
       return true
