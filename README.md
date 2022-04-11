@@ -52,7 +52,7 @@ Deployed contracts
 |                | Kovan                                                                                          |
 | -------        | ---------------------------------------------------------------------------------------------- |
 | Interep        | [0x5B8e...a6dc](https://kovan.etherscan.io/address/0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc) |
-| BrightidInterep| [0x2F0c...C1A3](https://kovan.etherscan.io/address/0x2f0c0a4afa1807e89328cf1eb451cb907f2dc1a3) |
+| BrightidInterep| [0xc031...FBc0](https://kovan.etherscan.io/address/0xc031d67f28fd31163ab91283bb4a3a977a26fbc0) |
 
 <br>
 BrightidInterep contract is on-chain verification about semaphore proof and brightID off-chain cerification(with BrightID node signed)<br><br>

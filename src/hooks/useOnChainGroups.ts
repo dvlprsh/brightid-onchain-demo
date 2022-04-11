@@ -23,11 +23,9 @@ function formatUint248String(text: string): string {
 const provider = new providers.JsonRpcProvider(
   `https://kovan.infura.io/v3/${getNextConfig().publicRuntimeConfig.infuraApiKey}` // kovan
 )
-const InterepContract = new Contract(
-  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
-Interep.abi, provider
-)
-const BrightidInterepContract = new Contract("0x2F0c0a4AFA1807E89328Cf1EB451CB907f2dC1A3", BrightidInterep.abi, provider)
+const InterepContract = new Contract("0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", Interep.abi, provider)
+const BrightidInterepContract = new Contract("0xc031D67F28FD31163aB91283bb4a3A977a26FBc0", BrightidInterep.abi, provider)
+
 //const GROUP_NAME = "brightidv1"
 const GROUPID = "627269676874696476310"//formatUint248String("brightidv1")
 const SIGNAL = "hello"
@@ -86,10 +84,10 @@ export default function useOnChainGroups(): ReturnParameters {
 
       console.log(finalblock)
       const filter = InterepContract.filters.MemberAdded(utils.hexlify(BigInt(GROUPID)))
-      console.log(filter)
       const hi = await InterepContract.queryFilter(filter)
       
-      console.log(hi)
+      console.log(hi[1].args)
+
       /***************************** */
 
       const identityCommitment = identity.genIdentityCommitment()
