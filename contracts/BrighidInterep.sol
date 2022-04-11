@@ -19,7 +19,8 @@ contract BrightidInterep is ERC721,Ownable {
 
     event SetBrightIdSettings(bytes32 context, address verifier);
     event Sponsor(address indexed addr);
-
+    event saveMessage(uint256 indexed externalNullifier, bytes32 signal);
+    
     /**
      * @param _context BrightID context used for verifying users
      * @param _verifier BrightID verifier address that signs BrightID verifications
@@ -122,6 +123,8 @@ contract BrightidInterep is ERC721,Ownable {
     ) public {
         require(checkMyBrightid(msg.sender), "your brightid is not verified");
         interep.verifyProof(_groupId, _signal, _nullifierHash, _externalNullifier, _proof); //check the event
+
+        emit saveMessage(_externalNullifier, _signal);
     }
 
     function mint(uint256 nullifierHash, uint256[8] calldata proof) public {
