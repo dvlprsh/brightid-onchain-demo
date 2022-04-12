@@ -49,7 +49,7 @@ type ReturnParameters = {
   retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (identityCommitment: string) => Promise<true | null>
-  proveMembership: (signer: Signer) => Promise<boolean | undefined>
+  proveMembership: (signer: Signer, signal: string) => Promise<any>
   mintNFT: (signer: Signer) => Promise<any>
   etherscanLink: string
   transactionstatus: boolean
@@ -210,7 +210,7 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   const proveMembership = useCallback(
-    async (signer: Signer, nonce = 0) => {
+    async (signer: Signer, signal: string, nonce = 0) => {
       const message = await signer.signMessage(
         `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
       )
@@ -223,7 +223,7 @@ export default function useOnChainGroups(): ReturnParameters {
             {
               message,
               groupId: GROUPID,
-              signal: "brightidv1-nft"
+              signal
             },
             { addQueryPrefix: true }
           )}`,

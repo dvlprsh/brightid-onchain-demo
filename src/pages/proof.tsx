@@ -2,7 +2,7 @@ import type { NextPage } from "next"
 import { Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import detectEthereumProvider from "@metamask/detect-provider"
-import { Link } from "@mui/material"
+import { Link, TextField } from "@mui/material"
 import { Signer, ethers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
@@ -13,12 +13,10 @@ import {
   Step,
   StepLabel,
   Button,
-  StepContent
+  StepContent,
 } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
-import { useInterval } from "usehooks-ts"
+import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
-import getNextConfig from "next/config"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -68,8 +66,6 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
-
 const Proof: NextPage = () => {
   const classes = useStyles()
 
@@ -81,19 +77,9 @@ const Proof: NextPage = () => {
   const [_loading, setLoading] = useState<boolean>(false)
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
-  const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
-  const [_pending, setPending] = useState<boolean>()
+  const [guestSignal, setGuestSignal] = useState<string>("")
 
-  const {
-    retrieveIdentityCommitment,
-    proveMembership,
-    transactionHash,
-  } = useOnChainGroups()
-
-  useEffect(() => {
-    !!transactionHash && setPending(true)
-  }, [transactionHash])
+  const { proveMembership } = useOnChainGroups()
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -132,7 +118,9 @@ const Proof: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({
+      method: "eth_requestAccounts"
+    })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -145,65 +133,15 @@ const Proof: NextPage = () => {
     handleNext()
   }
 
-  async function getTransactionStatus(txHash: string) {
-    const response = await fetch(
-      `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
-    )
-    return response.json()
-  }
-
-  const checkTransactionStatus = useCallback(async (txHash: string) => {
-    const transactionStatus = await getTransactionStatus(txHash)
-    const status = transactionStatus.result.status
-
-    if (status === "1") {
-      setPending(false)
-      setTransactionSuccess(true)
-      setLoading(false)
-      handleNext()
-      console.log("transaction success")
-    } else if (status === "0") {
-      setPending(false)
-      setTransactionSuccess(false)
-      setLoading(false)
-      handleNext()
-      console.log("transaction failed")
-    } else if (status === "") {
-      setPending(true)
-    } else {
-      setPending(true)
-      console.log("no txhash yet")
-    }
-  }, [])
-
-  useInterval(
-    () => {
-      const txHash = transactionHash
-      checkTransactionStatus(txHash)
-    },
-    transactionHash && _pending === true ? 2000 : null
-  )
-
-  const generateIdentity = async () => {
-    try {
-      const identityCommitment =
-        _signer && (await retrieveIdentityCommitment(_signer))
-
-      if (!identityCommitment) return
-
-      setIdentityCommitment(identityCommitment)
-      identityCommitment && setActiveStep(2)
-    } catch (e) {
-      setError({
-        errorStep: _activeStep,
-        message: "generate identity Failed - " + e
-      })
-    }
+  const getSignal = (e) => {
+    e.preventDefault()
+    console.log(guestSignal)
+    handleNext()
   }
 
   const getMembershipProof = async () => {
     try {
-      const hasMembership = _signer && (await proveMembership(_signer))
+      const hasMembership = _signer && (await proveMembership(_signer, guestSignal))
       console.log(hasMembership)
     } catch (e) {
       setError({
@@ -262,18 +200,22 @@ const Proof: NextPage = () => {
             </StepContent>
           </Step>
           <Step>
-            <StepLabel error={_error?.errorStep === 1}>
-              Generate your Semaphore identity
-            </StepLabel>
+            <StepLabel error={_error?.errorStep === 1}>Guestbook</StepLabel>
             <StepContent style={{ width: 400 }}>
-              <Button
-                fullWidth
-                onClick={generateIdentity}
-                variant="outlined"
-                disabled={!account}
-              >
-                Generate Identity
-              </Button>
+              <form onSubmit={getSignal} style={{width: 400}}>
+                <TextField
+                  required
+                  id="guest-book"
+                  label="Write your nickname"
+                  variant="filled"
+                  inputProps={{ maxLength: 30 }}
+                  onInput={e => {setGuestSignal(e.target.value)}}
+                  style={{width: 300, height: 50}}
+                />
+                <Button type="submit" variant="outlined" style={{width: 100, height: 55}}>
+                  Submit
+                </Button>
+              </form>
             </StepContent>
           </Step>
           <Step>
@@ -285,54 +227,10 @@ const Proof: NextPage = () => {
                 fullWidth
                 onClick={getMembershipProof}
                 variant="outlined"
-                disabled={!_identityCommitment}
                 loading={_loading}
               >
                 Proof Membership
               </LoadingButton>
-            </StepContent>
-            {transactionHash && _pending && (
-              <Typography variant="body1">
-                Your Transaction is now pending...
-                <br /> Please wait (Check the&nbsp;
-                <Link
-                  href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                  underline="hover"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  transaction
-                </Link>
-                )
-              </Typography>
-            )}
-          </Step>
-          <Step>
-            <StepContent>
-              {transactionHash && _transactionSuccess === true ? (
-                <Typography variant="body1">
-                  Transaction success
-                  <br /> Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                </Typography>
-              ) : (
-                <Typography variant="body1">uncaught error</Typography>
-              )}
-              <Button
-                fullWidth
-                onClick={() => setActiveStep(0)}
-                variant="outlined"
-                disabled={!_ethereumProvider}
-              >
-                Home
-              </Button>
             </StepContent>
           </Step>
         </Stepper>
