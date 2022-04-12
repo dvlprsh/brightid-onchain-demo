@@ -169,13 +169,6 @@ const Home: NextPage = () => {
     handleNext()
   }
 
-  async function getBrightIdUserData(address: string) {
-    const response = await fetch(
-      `https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`
-    )
-    return response.json()
-  }
-
   const generateIdentity = async () => {
     try {
       const identityCommitment =
