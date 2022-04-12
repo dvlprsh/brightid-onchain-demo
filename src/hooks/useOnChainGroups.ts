@@ -28,19 +28,19 @@ const provider = new providers.JsonRpcProvider(
   }` // kovan
 )
 const InterepContract = new Contract(
-  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc",
+  "0xBeDb7A22bf236349ee1bEA7B4fb4Eb2403529030",
   Interep.abi,
   provider
 )
 const BrightidInterepContract = new Contract(
-  "0xc031D67F28FD31163aB91283bb4a3A977a26FBc0",
+  "0xfe795B30F4A6c7D9162C4D618A6335C140DEf9e9",
   BrightidInterep.abi,
   provider
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "35" //"627269676874696476310"//formatUint248String("brightidv1")
-const SIGNAL = "hello"
+const GROUPID = "3535"//formatUint248String("brightidv1")
+const SIGNAL = "brightidv1-nft"
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
@@ -50,8 +50,9 @@ type ReturnParameters = {
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (identityCommitment: string) => Promise<true | null>
   proveMembership: (signer: Signer) => Promise<boolean | undefined>
-  etherscanLink?: string
-  transactionstatus?: boolean
+  mintNFT: (signer: Signer) => Promise<any>
+  etherscanLink: string
+  transactionstatus: boolean
   hasjoined: boolean
   loading: boolean
 }
@@ -151,11 +152,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const receipt = await provider.waitForTransaction(transaction.hash)
       console.log(receipt.status)
 
-      if (receipt.status) {
-        setTransactionStatus(true)
-      } else {
-        setTransactionStatus(false)
-      }
+      setTransactionStatus(!!receipt.status)
 
       setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
@@ -202,11 +199,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const receipt = await provider.waitForTransaction(transaction.hash)
       console.log(receipt.status)
 
-      if (receipt.status) {
-        setTransactionStatus(true)
-      } else {
-        setTransactionStatus(false)
-      }
+      setTransactionStatus(!!receipt.status)
 
       setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
@@ -217,7 +210,7 @@ export default function useOnChainGroups(): ReturnParameters {
   )
 
   const proveMembership = useCallback(
-    async (signer: Signer, nonce = 0): Promise<boolean | undefined> => {
+    async (signer: Signer, nonce = 0) => {
       const message = await signer.signMessage(
         `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
       )
@@ -229,8 +222,8 @@ export default function useOnChainGroups(): ReturnParameters {
           `/api/proof${qs.stringify(
             {
               message,
-              GROUPID,
-              signal: SIGNAL
+              groupId: GROUPID,
+              signal: "brightidv1-nft"
             },
             { addQueryPrefix: true }
           )}`,
@@ -243,7 +236,7 @@ export default function useOnChainGroups(): ReturnParameters {
           throw new Error(response.error)
         }
 
-        return !!response.isVerified
+        console.log(response)
       } catch (error) {
         setLoading(false)
         throw error
@@ -252,12 +245,56 @@ export default function useOnChainGroups(): ReturnParameters {
     []
   )
 
+  const mintNFT = useCallback(
+    async (signer: Signer, nonce = 0) => {
+      const message = await signer.signMessage(
+        `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
+      )
+
+      setLoading(true)
+
+      try {
+        const response = await fetch(
+          `/api/proof${qs.stringify(
+            {
+              message,
+              groupId: GROUPID,
+              signal: "brightidv1-nft",
+              externalNullifier: GROUPID
+            },
+            { addQueryPrefix: true }
+          )}`,
+          {
+            method: "GET"
+          }
+        ).then((response) => response.json())
+
+        if (response.error) {
+          throw new Error(response.error)
+        }
+
+        const {publicSignals, solidityProof} = response
+        console.log(publicSignals)
+        console.log(solidityProof)
+        //const tx = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof,GROUPID)
+        //const receipt = await provider.waitForTransaction(tx)
+        //console.log(receipt)
+      } catch (error) {
+        setLoading(false)
+        throw error
+      }
+    },
+    []
+  )
+
+
   return {
     retrieveIdentityCommitment,
     signMessage,
     joinGroup,
     leaveGroup,
     proveMembership,
+    mintNFT,
     etherscanLink: _link,
     transactionstatus: _transactionStatus,
     hasjoined: _hasjoined,

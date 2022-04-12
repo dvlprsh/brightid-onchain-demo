@@ -16,6 +16,7 @@ import {
   StepContent
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,6 +77,12 @@ const Mint: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
 
+  const {
+    mintNFT,
+    loading,
+    etherscanLink,
+    transactionstatus
+  } = useOnChainGroups()
   useEffect(() => {
     ;(async function IIFE() {
       if (!_ethereumProvider) {
@@ -127,7 +134,16 @@ const Mint: NextPage = () => {
   }
 
   const mintNft = async () => {
-    console.log("mint NFT")
+    try{
+    _signer && await mintNFT(_signer)
+
+
+    } catch (e) {
+      setError({
+        errorStep: _activeStep,
+        message: "mint failed - " + e
+      })
+    }
   }
 
   function handleNext() {
