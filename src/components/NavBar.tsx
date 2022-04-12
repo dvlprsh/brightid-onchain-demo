@@ -9,7 +9,8 @@ import { useRouter } from "next/router"
 export default function NavBar(): JSX.Element {
   const pages = [
     { title: "Join/Leave Group", path: "/" },
-    { title: "Memebership Proof", path: "/proof" }
+    { title: "Memebership Proof", path: "/proof" },
+    { title: "Mint NFT", path: "/mint"}
   ]
   const router = useRouter()
 
