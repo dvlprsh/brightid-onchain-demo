@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
-import { Contract, providers, Wallet } from "ethers"
-import Interep from "contract-artifacts/Interep.json"
+import { Contract, providers, Signer } from "ethers"
+import { formatBytes32String } from "ethers/lib/utils"
 import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
 import stringify from "fast-json-stable-stringify"
@@ -12,11 +12,6 @@ const provider = new providers.JsonRpcProvider(
     getNextConfig().publicRuntimeConfig.infuraApiKey
   }` // kovan
 )
-const contract = new Contract(
-  "0x5B8e7cC7bAC61A4b952d472b67056B2f260ba6dc", // kovan
-  Interep.abi,
-  provider
-)
 
 const BrightidInterepContract = new Contract(
   "0xc031D67F28FD31163aB91283bb4a3A977a26FBc0",
@@ -24,18 +19,13 @@ const BrightidInterepContract = new Contract(
   provider
 )
 
-//const GROUP_NAME = "brightidv1"
-const GROUPID = "627269676874696476310" //formatUint248String("brightidv1")
-const SIGNAL = "hello"
-const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
-const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 const CONTEXT = "interep"
 const privateKey = getNextConfig().publicRuntimeConfig.brightIdApiKey || ""
 
 type ReturnParameters = {
   getBrightIdUserData: (address: string) => Promise<any>
   selfSponsor: (address: string) => Promise<any>
-  registerBrightId: (address: string) => Promise<any>
+  registerBrightId: (signer: Signer) => Promise<any>
   etherscanLink: string
   transactionstatus: boolean
   loading: boolean
@@ -73,11 +63,11 @@ export default function useBrightId(): ReturnParameters {
     []
   )
 
-  const registerBrightId = useCallback(async (address: string) => {
+  const registerBrightId = useCallback(async (signer: Signer) => {
     try {
       setLoading(true)
 
-      const response = await getBrightIdUserData(address)
+      const response = await getBrightIdUserData(await signer.getAddress())
 
       if (!response?.data) throw new Error()
 
@@ -87,9 +77,8 @@ export default function useBrightId(): ReturnParameters {
         timestamp
       } = response?.data
 
-      const transaction = await BrightidInterepContract.connect(
-        adminWallet
-      ).register(CONTEXT, contextIds, timestamp, v, r, s)
+      const transaction = await BrightidInterepContract.connect(signer)
+      .register(formatBytes32String(CONTEXT), contextIds, timestamp, v, "0x"+r, "0x"+s)
 
       const receipt = await provider.waitForTransaction(transaction.hash)
 

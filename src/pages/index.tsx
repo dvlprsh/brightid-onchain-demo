@@ -19,7 +19,6 @@ import {
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import useBrightId from "src/hooks/useBrightId"
-import getNextConfig from "next/config"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -175,6 +174,8 @@ const Home: NextPage = () => {
         _signer && (await retrieveIdentityCommitment(_signer))
 
       if (!identityCommitment) return
+
+      //await registerBrightId(_signer)
 
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
