@@ -92,13 +92,14 @@ export default function useOnChainGroups(): ReturnParameters {
 
       /***************test***************** */
 
-      const startblock = 30391824 //30946902 BrightidInterep created
+      const startblock = 30970366
 
-      //const filter = BrightidInterepContract.filters.saveMessage(externalNullifier)
-      const filter = InterepContract.filters.MemberAdded(
-        utils.hexlify(BigInt(GROUPID))
-      )
-      const hi = await InterepContract.queryFilter(filter, startblock)
+      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(BigInt("2")))//externalnullifier
+      // const filter = InterepContract.filters.MemberAdded(
+      //   utils.hexlify(BigInt(GROUPID))
+      // )
+
+      const hi = await BrightidInterepContract.queryFilter(filter, startblock)
 
       //first way
       let myArray1 = []
