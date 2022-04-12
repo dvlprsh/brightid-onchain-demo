@@ -39,7 +39,7 @@ const BrightidInterepContract = new Contract(
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "3535"//formatUint248String("brightidv1")
+const GROUPID = "35"//formatUint248String("brightidv1")
 const SIGNAL = "brightidv1-nft"
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
@@ -216,7 +216,7 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       setLoading(true)
-      const externalNullifier = "2"
+      const externalNullifier = "4"
       
       try {
         const response = await fetch(
@@ -240,10 +240,13 @@ export default function useOnChainGroups(): ReturnParameters {
         const {publicSignals, solidityProof} = response
         console.log(publicSignals.nullifierHash)
         console.log(solidityProof)
-        const tx = await BrightidInterepContract.connect(signer).leaveMessage(GROUPID, formatBytes32String(signal), publicSignals.nullifierHash, externalNullifier, solidityProof, { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 })
-        const receipt = await provider.waitForTransaction(tx.hash)
-
+        const transaction = await BrightidInterepContract.connect(signer).leaveMessage(GROUPID, formatBytes32String(signal), publicSignals.nullifierHash, externalNullifier, solidityProof)
+        const receipt = await provider.waitForTransaction(transaction.hash)
         console.log(receipt)
+        setTransactionStatus(!!receipt.status)
+        setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
+        setLoading(false)
+        return true
       } catch (error) {
         setLoading(false)
         throw error

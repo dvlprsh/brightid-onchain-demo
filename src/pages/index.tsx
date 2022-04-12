@@ -389,19 +389,11 @@ const Home: NextPage = () => {
                       rel="noreferrer"
                       target="_blank"
                     >
-                      transaction
-                    </Link>
-                    )
-                  </Typography>
-                  <Button
-                    fullWidth={false}
-                    onClick={refreshPage}
-                    variant="outlined"
-                  >
-                    Home
-                  </Button>
-                </Box>
-              )}
+                      Home
+                    </Button>
+                  </Box>
+                )}
+              </StepContent>
             </Step>
           </Stepper>
           <Paper className={classes.results} sx={{ p: 3 }}>

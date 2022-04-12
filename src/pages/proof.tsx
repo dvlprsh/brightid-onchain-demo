@@ -13,7 +13,7 @@ import {
   Step,
   StepLabel,
   Button,
-  StepContent,
+  StepContent
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
@@ -71,15 +71,17 @@ const Proof: NextPage = () => {
 
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
-  const [_error, setError] = useState<
-    { errorStep: number; message?: string } | undefined
-  >()
-  const [_loading, setLoading] = useState<boolean>(false)
+  const [_error, setError] = useState<{ errorStep: number; message?: string } | undefined>()
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
   const [guestSignal, setGuestSignal] = useState<string>("")
 
-  const { proveMembership } = useOnChainGroups()
+  const {
+    proveMembership,
+    loading,
+    etherscanLink,
+    transactionstatus
+  } = useOnChainGroups()
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -141,7 +143,8 @@ const Proof: NextPage = () => {
 
   const getMembershipProof = async () => {
     try {
-      const hasMembership = _signer && (await proveMembership(_signer, guestSignal))
+      const hasMembership =
+        _signer && (await proveMembership(_signer, guestSignal))
       console.log(hasMembership)
     } catch (e) {
       setError({
@@ -202,17 +205,23 @@ const Proof: NextPage = () => {
           <Step>
             <StepLabel error={_error?.errorStep === 1}>Guestbook</StepLabel>
             <StepContent style={{ width: 400 }}>
-              <form onSubmit={getSignal} style={{width: 400}}>
+              <form onSubmit={getSignal} style={{ width: 400 }}>
                 <TextField
                   required
                   id="guest-book"
                   label="Write your nickname"
                   variant="filled"
                   inputProps={{ maxLength: 30 }}
-                  onInput={e => {setGuestSignal(e.target.value)}}
-                  style={{width: 300, height: 50}}
+                  onInput={(e) => {
+                    setGuestSignal(e.target.value)
+                  }}
+                  style={{ width: 300, height: 50 }}
                 />
-                <Button type="submit" variant="outlined" style={{width: 100, height: 55}}>
+                <Button
+                  type="submit"
+                  variant="outlined"
+                  style={{ width: 100, height: 55 }}
+                >
                   Submit
                 </Button>
               </form>
@@ -227,10 +236,33 @@ const Proof: NextPage = () => {
                 fullWidth
                 onClick={getMembershipProof}
                 variant="outlined"
-                loading={_loading}
+                disabled={transactionstatus}
+                loading={loading}
               >
                 Proof Membership
               </LoadingButton>
+              {transactionstatus && (
+                <Box>
+                  <Typography variant="body1">
+                    Transaction {transactionstatus ? "Successful" : "Failed"} (Check the&nbsp;
+                    <Link
+                      href={etherscanLink}
+                      underline="hover"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      transaction
+                    </Link>
+                    )
+                  </Typography>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                  >
+                    Print Guest Book
+                  </Button>
+                </Box>
+              )}
             </StepContent>
           </Step>
         </Stepper>
