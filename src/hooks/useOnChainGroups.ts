@@ -7,7 +7,7 @@ import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
 import { HashZero } from "@ethersproject/constants"
-import { toUtf8Bytes, concat, hexlify } from "ethers/lib/utils"
+import { toUtf8Bytes, concat, hexlify, formatBytes32String } from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
 import * as qs from "qs"
 
@@ -216,14 +216,16 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       setLoading(true)
-
+      const externalNullifier = "2"
+      
       try {
         const response = await fetch(
           `/api/proof${qs.stringify(
             {
               message,
               groupId: GROUPID,
-              signal
+              signal,
+              externalNullifier
             },
             { addQueryPrefix: true }
           )}`,
@@ -235,8 +237,13 @@ export default function useOnChainGroups(): ReturnParameters {
         if (response.error) {
           throw new Error(response.error)
         }
+        const {publicSignals, solidityProof} = response
+        console.log(publicSignals.nullifierHash)
+        console.log(solidityProof)
+        const tx = await BrightidInterepContract.connect(signer).leaveMessage(GROUPID, formatBytes32String(signal), publicSignals.nullifierHash, externalNullifier, solidityProof, { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 })
+        const receipt = await provider.waitForTransaction(tx.hash)
 
-        console.log(response)
+        console.log(receipt)
       } catch (error) {
         setLoading(false)
         throw error
