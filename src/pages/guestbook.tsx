@@ -144,7 +144,7 @@ const Proof: NextPage = () => {
                   label="leave guestbook"
                   variant="filled"
                   inputProps={{ maxLength: 30 }}
-                  onInput={(e) => {
+                  onInput={(e: any) => {
                     setGuestSignal(e.target.value)
                   }}
                   style={{ width: 300, height: 50 }}
