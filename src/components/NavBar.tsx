@@ -55,7 +55,7 @@ export default function NavBar(): JSX.Element {
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             <Button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/join")}
               sx={{ my: 2, color: "white", display: "block" }}
             >
               Join/Leave Group

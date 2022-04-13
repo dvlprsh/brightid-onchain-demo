@@ -159,10 +159,6 @@ const Home: NextPage = () => {
           `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
         )
 
-        if (account) {
-          setActiveStep(1)
-        }
-
         _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
           if (newAccounts.length === 0) {
             setActiveStep(0)
@@ -172,22 +168,6 @@ const Home: NextPage = () => {
     })()
   }, [_ethereumProvider])
 
-  async function connect() {
-    const accounts = await _ethereumProvider.request({
-      method: "eth_requestAccounts"
-    })
-    await _ethereumProvider.request({
-      method: "wallet_switchEthereumChain",
-      params: [
-        {
-          chainId: "0x2a" // kovan
-        }
-      ]
-    })
-    setAccount(accounts[0])
-    handleNext()
-  }
-
   const generateIdentity = async () => {
     try {
       const identityCommitment =
@@ -196,7 +176,7 @@ const Home: NextPage = () => {
       if (!identityCommitment) return
 
       setIdentityCommitment(identityCommitment)
-      identityCommitment && setActiveStep(3)
+      identityCommitment && setActiveStep(2)
     } catch (e) {
       setError({
         errorStep: _activeStep,
@@ -246,7 +226,7 @@ const Home: NextPage = () => {
     const isRegistered = await checkBrightid(address)
 
     if (isRegistered) {
-      setActiveStep(2)
+      setActiveStep(1)
       setVerified(true)
     }
   }
@@ -258,7 +238,7 @@ const Home: NextPage = () => {
       const isSuccess = await registerBrightId(_signer)
 
       if (isSuccess) {
-        setActiveStep(2)
+        setActiveStep(1)
         setVerified(true)
       }
     } catch (e) {
@@ -284,23 +264,7 @@ const Home: NextPage = () => {
           <Typography variant="body1" sx={{ mb: 4 }}>
             Link to BrightId
           </Typography>
-
           <Stepper activeStep={_activeStep} orientation="vertical">
-            <Step>
-              <StepLabel error={_error?.errorStep === 0}>
-                Connect your wallet with Metamask
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth
-                  onClick={() => connect()}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Connect wallet
-                </Button>
-              </StepContent>
-            </Step>
             <Step>
               <StepLabel error={_error?.errorStep === 1}>
                 Link BrightID to Interep

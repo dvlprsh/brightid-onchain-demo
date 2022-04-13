@@ -159,10 +159,6 @@ const Home: NextPage = () => {
           `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
         )
 
-        if (account) {
-          setActiveStep(1)
-        }
-
         _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
           if (newAccounts.length === 0) {
             setActiveStep(0)

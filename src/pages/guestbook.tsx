@@ -103,10 +103,6 @@ const Proof: NextPage = () => {
         const account = accounts[0]
         setAccount(account)
 
-        if (account) {
-          setActiveStep(1)
-        }
-
         _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
           if (newAccounts.length === 0) {
             setActiveStep(0)
@@ -119,22 +115,6 @@ const Proof: NextPage = () => {
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
     setError(undefined)
-  }
-
-  async function connect() {
-    const accounts = await _ethereumProvider.request({
-      method: "eth_requestAccounts"
-    })
-    await _ethereumProvider.request({
-      method: "wallet_switchEthereumChain",
-      params: [
-        {
-          chainId: "0x2a" // kovan
-        }
-      ]
-    })
-    setAccount(accounts[0])
-    handleNext()
   }
 
   const getMembershipProof = async () => {
@@ -183,21 +163,6 @@ const Proof: NextPage = () => {
         </Typography>
 
         <Stepper activeStep={_activeStep} orientation="vertical">
-          <Step>
-            <StepLabel error={_error?.errorStep === 0}>
-              Connect your wallet with Metamask
-            </StepLabel>
-            <StepContent style={{ width: 400 }}>
-              <Button
-                fullWidth
-                onClick={() => connect()}
-                variant="outlined"
-                disabled={!_ethereumProvider}
-              >
-                Connect wallet
-              </Button>
-            </StepContent>
-          </Step>
           <Step>
             <StepLabel error={_error?.errorStep === 1}>Guestbook</StepLabel>
             <StepContent style={{ width: 400 }}>

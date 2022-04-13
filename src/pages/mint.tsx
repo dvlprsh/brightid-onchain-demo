@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 20,
       width: 530,
       textAlign: "center"
-    },
+    }
   })
 )
 
@@ -69,12 +69,8 @@ const Mint: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
 
-  const {
-    mintNFT,
-    loading,
-    etherscanLink,
-    transactionstatus
-  } = useOnChainGroups()
+  const { mintNFT, loading, etherscanLink, transactionstatus } =
+    useOnChainGroups()
   useEffect(() => {
     ;(async function IIFE() {
       if (!_ethereumProvider) {
@@ -98,10 +94,6 @@ const Mint: NextPage = () => {
         const account = accounts[0]
         setAccount(account)
 
-        if (account) {
-          setActiveStep(1)
-        }
-
         _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
           if (newAccounts.length === 0) {
             setActiveStep(0)
@@ -111,36 +103,15 @@ const Mint: NextPage = () => {
     })()
   }, [_ethereumProvider])
 
-  async function connect() {
-    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
-    await _ethereumProvider.request({
-      method: "wallet_switchEthereumChain",
-      params: [
-        {
-          chainId: "0x2a" // kovan
-        }
-      ]
-    })
-    setAccount(accounts[0])
-    handleNext()
-  }
-
   const mintNft = async () => {
-    try{
-    _signer && await mintNFT(_signer)
-
-
+    try {
+      _signer && (await mintNFT(_signer))
     } catch (e) {
       setError({
         errorStep: _activeStep,
         message: "mint failed - " + e
       })
     }
-  }
-
-  function handleNext() {
-    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
-    setError(undefined)
   }
 
   return (
@@ -154,37 +125,10 @@ const Mint: NextPage = () => {
           Membership Proof
         </Typography>
 
-        <Stepper activeStep={_activeStep} orientation="vertical">
-          <Step>
-            <StepLabel error={_error?.errorStep === 0}>
-              Connect your wallet with Metamask
-            </StepLabel>
-            <StepContent style={{ width: 400 }}>
-              <Button
-                fullWidth
-                onClick={() => connect()}
-                variant="outlined"
-                disabled={!_ethereumProvider}
-              >
-                Connect wallet
-              </Button>
-            </StepContent>
-          </Step>
-          <Step>
-            <StepLabel error={_error?.errorStep === 1}>
-              Mint NFT
-            </StepLabel>
-            <StepContent style={{ width: 400 }}>
-              <Button
-                fullWidth
-                onClick={mintNft}
-                variant="outlined"
-              >
-                Mint NFT
-              </Button>
-            </StepContent>
-          </Step>
-        </Stepper>
+        <Button fullWidth onClick={mintNft} variant="outlined">
+          Mint NFT
+        </Button>
+
         {_error && (
           <Paper className={classes.results} sx={{ p: 3 }}>
             {_error.message && (
