@@ -44,7 +44,6 @@ export default function useBrightId(): ReturnParameters {
         )
         return response.json()
       } catch (error) {
-        console.error(error)
         setLoading(false)
         return null
       }
@@ -61,7 +60,6 @@ export default function useBrightId(): ReturnParameters {
 
         return isRegistered
       } catch (error) {
-        console.error(error)
         setLoading(false)
         return null
       }

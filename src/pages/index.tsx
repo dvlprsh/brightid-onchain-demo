@@ -1,24 +1,9 @@
 import type { NextPage } from "next"
+import Link from "next/link"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
-import detectEthereumProvider from "@metamask/detect-provider"
-import QRCode from "qrcode.react"
-import { Link } from "@mui/material"
-import { Signer, ethers } from "ethers"
-import { LoadingButton } from "@mui/lab"
-import {
-  Paper,
-  Box,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
-  StepContent
-} from "@mui/material"
-import React, { useEffect, useState } from "react"
-import useOnChainGroups from "src/hooks/useOnChainGroups"
-import useBrightId from "src/hooks/useBrightId"
+import { Paper, Box, Typography } from "@mui/material"
+import React from "react"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -34,7 +19,8 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       display: "flex",
       flexDirection: "column",
-      alignItems: "center"
+      alignItems: "center",
+      width: "60%"
     },
     qrcode: {
       margin: 20
@@ -50,13 +36,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 530,
       textAlign: "center"
     },
-    github: {
-      color: "white",
-      fill: "#121212",
-      position: "absolute",
-      top: "0",
-      border: "0",
-      right: "0"
+    link: {
+      textDecoration: "underline"
     }
   })
 )
@@ -70,352 +51,61 @@ const theme = createTheme({
   }
 })
 
-const NODE_URL = "http:%2f%2fnode.brightid.org"
-const CONTEXT = "interep"
-
 const Home: NextPage = () => {
   const classes = useStyles()
 
-  const [_ethereumProvider, setEthereumProvider] = useState<any>()
-  const [_activeStep, setActiveStep] = useState<number>(0)
-  const [_error, setError] = useState<
-    { errorStep: number; message?: string } | undefined
-  >()
-  const [_loading, setLoading] = useState<boolean>(false)
-  const [url, setUrl] = useState<string>()
-  const [account, setAccount] = useState<string>()
-  const [verified, setVerified] = useState<boolean>(false)
-  const [_signer, setSigner] = useState<Signer>()
-  const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionstatus, setTransactionstatus] = useState<boolean>()
-  const [_etherscanLink, setEtherscanLink] = useState<string>()
-
-  const {
-    signMessage,
-    retrieveIdentityCommitment,
-    joinGroup,
-    leaveGroup,
-    hasjoined,
-    loading,
-    etherscanLink,
-    transactionstatus
-  } = useOnChainGroups()
-
-  const {
-    getBrightIdUserData,
-    selfSponsor,
-    registerBrightId,
-    checkBrightid,
-    transactionstatus: brightIdTransactionstatus,
-    loading: brightIdLoading,
-    etherscanLink: brightIdEtherscanLink
-  } = useBrightId()
-
-  useEffect(() => {
-    if (brightIdTransactionstatus !== undefined) {
-      setTransactionstatus(brightIdTransactionstatus)
-    }
-  }, [brightIdTransactionstatus])
-
-  useEffect(() => {
-    if (transactionstatus !== undefined) {
-      setTransactionstatus(transactionstatus)
-    }
-  }, [transactionstatus])
-
-  useEffect(() => {
-    etherscanLink && setEtherscanLink(etherscanLink)
-  }, [etherscanLink])
-
-  useEffect(() => {
-    brightIdEtherscanLink && setEtherscanLink(brightIdEtherscanLink)
-  }, [brightIdEtherscanLink])
-
-  useEffect(() => {
-    ;(async () => {
-      setError(undefined)
-
-      if (_activeStep === 1 && account) {
-        await checkVerification(account)
-      }
-    })()
-  }, [_activeStep, account])
-
-  useEffect(() => {
-    ;(async function IIFE() {
-      if (!_ethereumProvider) {
-        const ethereumProvider = (await detectEthereumProvider()) as any
-
-        if (ethereumProvider) {
-          setEthereumProvider(ethereumProvider)
-
-          const ethersProvider = new ethers.providers.Web3Provider(
-            ethereumProvider
-          )
-          const signer = ethersProvider && ethersProvider.getSigner()
-          setSigner(signer)
-        } else {
-          console.error("Please install Metamask!")
-        }
-      } else {
-        const accounts = await _ethereumProvider.request({
-          method: "eth_accounts"
-        })
-        const account = accounts[0]
-        setAccount(account)
-        setUrl(
-          `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
-        )
-
-        if (account) {
-          setActiveStep(1)
-        }
-
-        _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
-          if (newAccounts.length === 0) {
-            setActiveStep(0)
-          }
-        })
-      }
-    })()
-  }, [_ethereumProvider])
-
-  async function connect() {
-    const accounts = await _ethereumProvider.request({
-      method: "eth_requestAccounts"
-    })
-    await _ethereumProvider.request({
-      method: "wallet_switchEthereumChain",
-      params: [
-        {
-          chainId: "0x2a" // kovan
-        }
-      ]
-    })
-    setAccount(accounts[0])
-    handleNext()
-  }
-
-  const generateIdentity = async () => {
-    try {
-      const identityCommitment =
-        _signer && (await retrieveIdentityCommitment(_signer))
-
-      if (!identityCommitment) return
-
-      setIdentityCommitment(identityCommitment)
-      identityCommitment && setActiveStep(3)
-    } catch (e) {
-      setError({
-        errorStep: _activeStep,
-        message: "generate identity Failed - " + e
-      })
-    }
-  }
-
-  const joinOnChainGroup = async () => {
-    try {
-      if (!_signer || !_identityCommitment) return
-
-      setLoading(true)
-      const userSignature = await signMessage(_signer, _identityCommitment)
-
-      if (userSignature) {
-        await joinGroup(_identityCommitment)
-      }
-    } catch (e) {
-      setError({ errorStep: _activeStep, message: "join group Failed - " + e })
-      setLoading(false)
-    }
-  }
-
-  const leaveOnchainGroup = async () => {
-    try {
-      if (!_signer || !_identityCommitment) return
-
-      setLoading(true)
-      const userSignature = await signMessage(_signer, _identityCommitment)
-
-      if (userSignature) {
-        await leaveGroup(_identityCommitment)
-      }
-    } catch (e) {
-      setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
-      setLoading(false)
-    }
-  }
-
-  function handleNext() {
-    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
-    setError(undefined)
-  }
-
-  const checkVerification = async (address: string) => {
-    const isRegistered = await checkBrightid(address)
-
-    if (isRegistered) {
-      setActiveStep(2)
-      setVerified(true)
-    }
-  }
-
-  const registerBrightIdOnChain = async () => {
-    try {
-      if (!_signer || !account) return
-
-      const isSuccess = await registerBrightId(_signer)
-
-      if (isSuccess) {
-        setActiveStep(2)
-        setVerified(true)
-      }
-    } catch (e) {
-      setError({
-        errorStep: _activeStep,
-        message: `${e}`
-      })
-    }
-  }
-
-  const refreshPage = () => {
-    window.location.reload()
-  }
-  
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
-        <Link
-          href="https://github.com/dvlprsh/brightid-onchain-demo"
-          className={classes.github}
-        >
-          <svg width="80" height="80" viewBox="0 0 250 250">
-            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
-            <path
-              fill="currentColor"
-              d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
-            ></path>
-            <path
-              fill="currentColor"
-              d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
-            ></path>
-          </svg>
-        </Link>
         <Box className={classes.content}>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Interep On-chain group
+            Interep On-chain group with BrightID
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-            Link to BrightId
+            "brightidv1" on-chain group has {} members
           </Typography>
-
-          <Stepper activeStep={_activeStep} orientation="vertical">
-            <Step>
-              <StepLabel error={_error?.errorStep === 0}>
-                Connect your wallet with Metamask
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth
-                  onClick={() => connect()}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Connect wallet
-                </Button>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 1}>
-                Link BrightID to Interep
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Paper className={classes.stepWrapper} sx={{ p: 3 }}>
-                  <Typography variant="h5">Link BrightID</Typography>
-                  {url ? (
-                    <QRCode value={url} className={classes.qrcode} />
-                  ) : (
-                    <Typography>error</Typography>
-                  )}
-                  <LoadingButton
-                    onClick={registerBrightIdOnChain}
-                    variant="outlined"
-                    disabled={!account}
-                    loading={brightIdLoading}
-                  >
-                    Register BrightID On-Chain
-                  </LoadingButton>
-                </Paper>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 2}>
-                Generate your Semaphore identity
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                <Button
-                  fullWidth
-                  onClick={generateIdentity}
-                  variant="outlined"
-                  disabled={verified === false}
-                >
-                  Generate Identity
-                </Button>
-              </StepContent>
-            </Step>
-            <Step>
-              <StepLabel error={_error?.errorStep === 3}>
-                {hasjoined ? "Leave" : "Join"} Group
-              </StepLabel>
-              <StepContent style={{ width: 400 }}>
-                {_transactionstatus ? (
-                  <Box>
-                    <Typography variant="body1">
-                      Transaction{" "}
-                      {!!_transactionstatus ? "Successful" : "Failed"} (Check
-                      the&nbsp;
-                      <Link
-                        href={etherscanLink}
-                        underline="hover"
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        transaction
-                      </Link>
-                      )
-                    </Typography>
-                    <Button fullWidth onClick={refreshPage} variant="outlined">
-                      Home
-                    </Button>
-                  </Box>
-                ) : (
-                  <LoadingButton
-                    fullWidth
-                    onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
-                    variant="outlined"
-                    loading={loading}
-                  >
-                    {hasjoined ? "Leave" : "Join"} Group
-                  </LoadingButton>
-                )}
-              </StepContent>
-            </Step>
-          </Stepper>
-          <Paper className={classes.results} sx={{ p: 3 }}>
-            {account && (
-              <>
-                <Typography variant="subtitle1">Selected account</Typography>
-                <Typography variant="body1">{account}</Typography>
-              </>
-            )}
-          </Paper>
-          {_error && (
-            <Paper className={classes.results} sx={{ p: 3 }}>
-              {_error.message && (
-                <Typography variant="body1">{_error.message}</Typography>
-              )}
-            </Paper>
-          )}
+          <Typography variant="body1" sx={{ mb: 4 }}>
+            <div>
+              This is a page where you can join/leave Interep on-chain groups
+              through proof of humanity with BrightID. The current interep
+              on-chain group ID is “brightidv1”, and group ID type is converted
+              to uint in on-chain. <br /> Here, BrightID is currently being
+              authenticated with minimal steps, and users can link their
+              brightID and register for authentication on-chain. After that, you
+              can join interep-brightid on-chain group.
+            </div>
+            <div>
+              (Refer to the following link for how to get Brightid verification:{" "}
+              <Link href="https://brightid.gitbook.io/brightid/getting-verified">
+                <a className={classes.link}>Getting-Verified</a>
+              </Link>
+              )
+            </div>
+            <h3>Join/leave on-chain Group</h3>
+            First, connect your wallet to the page and have brightid on your
+            mobile phone. The step of generating a unique identifier(contextId)
+            is required, currently the contextId is ETH address, and a link is
+            created to register the contextId to the context(interep here). This
+            link is rendered as a QR code on our page. Users can receive
+            off-chain authentication by scanning the QR code with their
+            brightid. Since we require on-chain authentication, users submit
+            verifications signed by brightid nodes to the smart contract. If the
+            user successfully registers for on-chain Bright ID authentication
+            through several conditions, the user can join “brightidv1” on-chain
+            group.
+            <h3>Leave guestBook</h3>A user with a group membership of
+            “brightidv1” can create a guestbook for the “externalNullifier”
+            provided on the current page only once. The guestbook doesn't use
+            its own database and gets the logged signals as events on-chain.
+            (See semaphore for more information on membership proof: {" "}
+            <Link href="https://semaphore.appliedzkp.org/">
+              <a className={classes.link}>Semaphore docs</a>
+            </Link>
+            )<h3>Mint NFT</h3>A user with a group membership of “brightidv1” can
+            mint the NFT badge for the group “brightidv1” only once. Please note
+            that this NFT has no function and is for testing purposes only.
+          </Typography>
         </Box>
       </Paper>
     </ThemeProvider>
