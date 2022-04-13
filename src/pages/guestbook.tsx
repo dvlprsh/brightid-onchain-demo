@@ -17,6 +17,7 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
+import MousIcon from '@mui/icons-material/Mouse'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 20,
       width: 530,
       textAlign: "center"
-    },
+    }
   })
 )
 
@@ -154,15 +155,11 @@ const Proof: NextPage = () => {
   return (
     <Paper className={classes.container} elevation={0} square={true}>
       <Box className={classes.content}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          Guest Book
-          <Button
-            variant="outlined"
-            onClick={printGuestBook}
-          >
-            open
-          </Button>
-        </Typography>
+        <Button onClick={printGuestBook} sx={{ color: "white" }} endIcon={<MousIcon />}>
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Guest Book
+          </Typography>
+        </Button>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
           You can leave your nickname in the Guestbook by prooving membership
@@ -241,7 +238,7 @@ const Proof: NextPage = () => {
         {openGuestBook && (
           <Paper className={classes.results} sx={{ p: 3 }}>
             {guestBook.map((guest, index) => (
-              <Typography variant="body1" key={index} sx={{borderBottom:1}}>
+              <Typography variant="body1" key={index} sx={{ borderBottom: 1 }}>
                 {guest}
               </Typography>
             ))}

@@ -85,7 +85,7 @@ export default function NavBar(): JSX.Element {
             </Menu>
           </Box>
           {account ? (
-            <Button variant="outlined" color="primary">
+            <Button variant="outlined" color="primary" sx={{marginRight: 10}}>
               {shortenAddress(account)}
             </Button>
           ) : (
