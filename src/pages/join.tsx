@@ -1,10 +1,9 @@
 import type { NextPage } from "next"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
-import detectEthereumProvider from "@metamask/detect-provider"
 import QRCode from "qrcode.react"
 import { Link } from "@mui/material"
-import { Signer, ethers } from "ethers"
+import { providers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
   Paper,
@@ -19,6 +18,9 @@ import {
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import useBrightId from "src/hooks/useBrightId"
+import { useWeb3React } from "@web3-react/core"
+import ConnectWalletInfo from "src/components/ConnectWalletInfo"
+import useSigner from "src/hooks/useSigner"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -49,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 20,
       width: 530,
       textAlign: "center"
-    },
+    }
   })
 )
 
@@ -68,19 +70,19 @@ const CONTEXT = "interep"
 const Home: NextPage = () => {
   const classes = useStyles()
 
+  const _signer = useSigner()
+  const { account } = useWeb3React<providers.Web3Provider>()
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
   const [_error, setError] = useState<
     { errorStep: number; message?: string } | undefined
   >()
   const [_loading, setLoading] = useState<boolean>(false)
-  const [url, setUrl] = useState<string>()
-  const [account, setAccount] = useState<string>()
   const [verified, setVerified] = useState<boolean>(false)
-  const [_signer, setSigner] = useState<Signer>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionstatus, setTransactionstatus] = useState<boolean>()
   const [_etherscanLink, setEtherscanLink] = useState<string>()
+  const url = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${account}`
 
   const {
     signMessage,
@@ -127,46 +129,11 @@ const Home: NextPage = () => {
     ;(async () => {
       setError(undefined)
 
-      if (_activeStep === 1 && account) {
+      if (_activeStep === 0 && account) {
         await checkVerification(account)
       }
     })()
   }, [_activeStep, account])
-
-  useEffect(() => {
-    ;(async function IIFE() {
-      if (!_ethereumProvider) {
-        const ethereumProvider = (await detectEthereumProvider()) as any
-
-        if (ethereumProvider) {
-          setEthereumProvider(ethereumProvider)
-
-          const ethersProvider = new ethers.providers.Web3Provider(
-            ethereumProvider
-          )
-          const signer = ethersProvider && ethersProvider.getSigner()
-          setSigner(signer)
-        } else {
-          console.error("Please install Metamask!")
-        }
-      } else {
-        const accounts = await _ethereumProvider.request({
-          method: "eth_accounts"
-        })
-        const account = accounts[0]
-        setAccount(account)
-        setUrl(
-          `brightid://link-verification/${NODE_URL}/${CONTEXT}/${accounts}`
-        )
-
-        _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
-          if (newAccounts.length === 0) {
-            setActiveStep(0)
-          }
-        })
-      }
-    })()
-  }, [_ethereumProvider])
 
   const generateIdentity = async () => {
     try {
@@ -252,21 +219,22 @@ const Home: NextPage = () => {
   const refreshPage = () => {
     window.location.reload()
   }
-  
+
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
         <Box className={classes.content}>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Join/Leave Group
+            Interep On-chain group
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
             Link to BrightId
           </Typography>
+
           <Stepper activeStep={_activeStep} orientation="vertical">
             <Step>
-              <StepLabel error={_error?.errorStep === 1}>
+              <StepLabel error={_error?.errorStep === 0}>
                 Link BrightID to Interep
               </StepLabel>
               <StepContent style={{ width: 400 }}>
@@ -289,7 +257,7 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={_error?.errorStep === 2}>
+              <StepLabel error={_error?.errorStep === 1}>
                 Generate your Semaphore identity
               </StepLabel>
               <StepContent style={{ width: 400 }}>
@@ -304,7 +272,7 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
             <Step>
-              <StepLabel error={_error?.errorStep === 3}>
+              <StepLabel error={_error?.errorStep === 2}>
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
@@ -341,14 +309,7 @@ const Home: NextPage = () => {
               </StepContent>
             </Step>
           </Stepper>
-          <Paper className={classes.results} sx={{ p: 3 }}>
-            {account && (
-              <>
-                <Typography variant="subtitle1">Selected account</Typography>
-                <Typography variant="body1">{account}</Typography>
-              </>
-            )}
-          </Paper>
+          {!account && <ConnectWalletInfo />}
           {_error && (
             <Paper className={classes.results} sx={{ p: 3 }}>
               {_error.message && (
