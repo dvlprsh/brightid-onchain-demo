@@ -49,7 +49,7 @@ export default function NavBar(): JSX.Element {
     <AppBar position="static" color="primary">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ width: 170, marginRight: 5 }}>
+          <Box sx={{ width: 170, marginRight: 5 }} onClick={() => router.push("/")}>
             <Image src={logo} alt="interep X BrihtID" layout="responsive" />
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
