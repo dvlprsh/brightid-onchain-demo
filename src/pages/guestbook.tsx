@@ -90,7 +90,7 @@ const Proof: NextPage = () => {
     } catch (e) {
       setError({
         errorStep: _activeStep,
-        message: "membership proof Failed - " + e.message
+        message: "membership proof Failed - " + e
       })
     }
   }
@@ -110,7 +110,7 @@ const Proof: NextPage = () => {
     } catch (e) {
       setError({
         errorStep: _activeStep,
-        message: "Can't load the guestBook - " + e.message
+        message: "Can't load the guestBook - " + e
       })
     }
   }

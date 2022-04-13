@@ -40,7 +40,7 @@ export default function NavBar(): JSX.Element {
   }
 
   const copyAccount = async () => {
-    await navigator.clipboard.writeText(account)
+    account && await navigator.clipboard.writeText(account)
   }
 
   useEffect(() => {
