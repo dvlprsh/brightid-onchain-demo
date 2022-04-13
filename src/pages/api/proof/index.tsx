@@ -6,10 +6,11 @@ interface Query {
   message: string
   groupId: string
   signal: string
+  externalNullifier: string
 }
 
 const handleMembershipProof = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { message, groupId, signal } = req.query as unknown as Query
+  const { message, groupId, signal, externalNullifier } = req.query as unknown as Query
 
   try {
     const zkFiles = {
@@ -18,7 +19,6 @@ const handleMembershipProof = async (req: NextApiRequest, res: NextApiResponse) 
     }
 
     const identity = new ZkIdentity(Strategy.MESSAGE, message)
-    const externalNullifier = groupId
 
     const { publicSignals, solidityProof } = await createProof(
       identity,
@@ -28,7 +28,7 @@ const handleMembershipProof = async (req: NextApiRequest, res: NextApiResponse) 
       zkFiles
     )
 
-    res.status(200).json({ isVerified: !!publicSignals && !!solidityProof })
+    res.status(200).json({ publicSignals, solidityProof })
   } catch (e) {
     res.status(401).send({ error: e.message })
   }

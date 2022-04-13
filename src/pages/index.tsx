@@ -16,10 +16,9 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useCallback, useEffect, useState } from "react"
-import { useInterval } from "usehooks-ts"
+import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
-import getNextConfig from "next/config"
+import useBrightId from "src/hooks/useBrightId"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -58,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: "0",
       border: "0",
       right: "0"
-    },
+    }
   })
 )
 
@@ -73,7 +72,6 @@ const theme = createTheme({
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
-const ETHERSCAN_API_KEY = getNextConfig().publicRuntimeConfig.etherscanApiKey
 
 const Home: NextPage = () => {
   const classes = useStyles()
@@ -89,35 +87,59 @@ const Home: NextPage = () => {
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionSuccess, setTransactionSuccess] = useState<boolean>(false)
-  const [_pending, setPending] = useState<boolean>()
+  const [_transactionstatus, setTransactionstatus] = useState<boolean>()
+  const [_etherscanLink, setEtherscanLink] = useState<string>()
 
   const {
-    groupId,
     signMessage,
     retrieveIdentityCommitment,
     joinGroup,
     leaveGroup,
-    transactionHash,
     hasjoined,
-    loading
+    loading,
+    etherscanLink,
+    transactionstatus
   } = useOnChainGroups()
+
+  const {
+    getBrightIdUserData,
+    selfSponsor,
+    registerBrightId,
+    checkBrightid,
+    transactionstatus: brightIdTransactionstatus,
+    loading: brightIdLoading,
+    etherscanLink: brightIdEtherscanLink
+  } = useBrightId()
+
+  useEffect(() => {
+    if (brightIdTransactionstatus !== undefined) {
+      setTransactionstatus(brightIdTransactionstatus)
+    }
+  }, [brightIdTransactionstatus])
+
+  useEffect(() => {
+    if (transactionstatus !== undefined) {
+      setTransactionstatus(transactionstatus)
+    }
+  }, [transactionstatus])
+
+  useEffect(() => {
+    etherscanLink && setEtherscanLink(etherscanLink)
+  }, [etherscanLink])
+
+  useEffect(() => {
+    brightIdEtherscanLink && setEtherscanLink(brightIdEtherscanLink)
+  }, [brightIdEtherscanLink])
 
   useEffect(() => {
     ;(async () => {
       setError(undefined)
 
-      try {
-        if (_activeStep === 1 && account) {
-          await checkVerification(account)
-        }
-      } catch (e) {}
+      if (_activeStep === 1 && account) {
+        await checkVerification(account)
+      }
     })()
   }, [_activeStep, account])
-
-  useEffect(() => {
-    !!transactionHash && setPending(true)
-  }, [transactionHash])
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -159,7 +181,9 @@ const Home: NextPage = () => {
   }, [_ethereumProvider])
 
   async function connect() {
-    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
+    const accounts = await _ethereumProvider.request({
+      method: "eth_requestAccounts"
+    })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -171,53 +195,6 @@ const Home: NextPage = () => {
     setAccount(accounts[0])
     handleNext()
   }
-
-  async function getBrightIdUserData(address: string) {
-    const response = await fetch(
-      `https://app.brightid.org/node/v5/verifications/${CONTEXT}/${address}`
-    )
-    return response.json()
-  }
-
-  async function getTransactionStatus(txHash: string) {
-    const response = await fetch(
-      // `https://api-kovan.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // kovan
-      `https://api-ropsten.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${ETHERSCAN_API_KEY}` // ropsten
-    )
-    return response.json()
-  }
-
-  const checkTransactionStatus = useCallback(async (txHash: string) => {
-    const transactionStatus = await getTransactionStatus(txHash)
-    const status = transactionStatus.result.status
-
-    if (status === "1") {
-      setPending(false)
-      setTransactionSuccess(true)
-      setLoading(false)
-      handleNext()
-      console.log("transaction success")
-    } else if (status === "0") {
-      setPending(false)
-      setTransactionSuccess(false)
-      setLoading(false)
-      handleNext()
-      console.log("transaction failed")
-    } else if (status === "") {
-      setPending(true)
-    } else {
-      setPending(true)
-      console.log("no txhash yet")
-    }
-  }, [])
-
-  useInterval(
-    () => {
-      const txHash = transactionHash
-      checkTransactionStatus(txHash)
-    },
-    transactionHash && _pending === true ? 2000 : null
-  )
 
   const generateIdentity = async () => {
     try {
@@ -274,20 +251,24 @@ const Home: NextPage = () => {
   }
 
   const checkVerification = async (address: string) => {
-    const brightIdUser = await getBrightIdUserData(address)
-    const isVerified = brightIdUser.data?.unique
+    const isRegistered = await checkBrightid(address)
 
-    if (isVerified) {
-      setVerified(isVerified)
+    if (isRegistered) {
       setActiveStep(2)
-    } else {
-      throw Error("You're not linked with BrightID correctly.")
+      setVerified(true)
     }
   }
 
-  const handleClickCheckVerification = async () => {
+  const registerBrightIdOnChain = async () => {
     try {
-      account && (await checkVerification(account))
+      if (!_signer || !account) return
+
+      const isSuccess = await registerBrightId(_signer)
+
+      if (isSuccess) {
+        setActiveStep(2)
+        setVerified(true)
+      }
     } catch (e) {
       setError({
         errorStep: _activeStep,
@@ -296,6 +277,10 @@ const Home: NextPage = () => {
     }
   }
 
+  const refreshPage = () => {
+    window.location.reload()
+  }
+  
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
@@ -352,13 +337,14 @@ const Home: NextPage = () => {
                   ) : (
                     <Typography>error</Typography>
                   )}
-                  <Button
-                    onClick={handleClickCheckVerification}
+                  <LoadingButton
+                    onClick={registerBrightIdOnChain}
                     variant="outlined"
                     disabled={!account}
+                    loading={brightIdLoading}
                   >
-                    Check Verification
-                  </Button>
+                    Register BrightID On-Chain
+                  </LoadingButton>
                 </Paper>
               </StepContent>
             </Step>
@@ -382,60 +368,36 @@ const Home: NextPage = () => {
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                <LoadingButton
-                  fullWidth
-                  onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
-                  variant="outlined"
-                  disabled={!_identityCommitment}
-                  loading={_loading}
-                >
-                  {hasjoined ? "Leave" : "Join"} Group
-                </LoadingButton>
-              </StepContent>
-              {transactionHash && _pending && (
-                <Typography variant="body1">
-                  Your Transaction is now pending...
-                  <br /> Please wait (Check the&nbsp;
-                  <Link
-                    href={"https://kovan.etherscan.io/tx/" + transactionHash}
-                    underline="hover"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    transaction
-                  </Link>
-                  )
-                </Typography>
-              )}
-            </Step>
-            <Step>
-              <StepContent>
-                {transactionHash && _transactionSuccess === true ? (
-                  <Typography variant="body1">
-                    Transaction success
-                    <br /> Check the&nbsp;
-                    <Link
-                      href={
-                        "https://kovan.etherscan.io/tx/" + transactionHash
-                      }
-                      underline="hover"
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      transaction
-                    </Link>
-                  </Typography>
+                {_transactionstatus ? (
+                  <Box>
+                    <Typography variant="body1">
+                      Transaction{" "}
+                      {!!_transactionstatus ? "Successful" : "Failed"} (Check
+                      the&nbsp;
+                      <Link
+                        href={etherscanLink}
+                        underline="hover"
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        transaction
+                      </Link>
+                      )
+                    </Typography>
+                    <Button fullWidth onClick={refreshPage} variant="outlined">
+                      Home
+                    </Button>
+                  </Box>
                 ) : (
-                  <Typography variant="body1">uncaught error</Typography>
+                  <LoadingButton
+                    fullWidth
+                    onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
+                    variant="outlined"
+                    loading={loading}
+                  >
+                    {hasjoined ? "Leave" : "Join"} Group
+                  </LoadingButton>
                 )}
-                <Button
-                  fullWidth
-                  onClick={() => setActiveStep(0)}
-                  variant="outlined"
-                  disabled={!_ethereumProvider}
-                >
-                  Home
-                </Button>
               </StepContent>
             </Step>
           </Stepper>
