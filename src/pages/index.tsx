@@ -368,40 +368,37 @@ const Home: NextPage = () => {
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                <LoadingButton
-                  fullWidth
-                  onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
-                  variant="outlined"
-                  disabled={transactionstatus}
-                  loading={loading}
-                >
-                  {hasjoined ? "Leave" : "Join"} Group
-                </LoadingButton>
-              </StepContent>
-              {_transactionstatus !== undefined && (
-                <Box>
-                  <Typography variant="body1">
-                    Transaction {_transactionstatus ? "Successful" : "Failed"}{" "}
-                    (Check the&nbsp;
-                    <Link
-                      href={_etherscanLink}
-                      underline="hover"
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      transaction
-                    </Link>
-                    )
-                  </Typography>
-                  <Button
-                    fullWidth={false}
-                    onClick={refreshPage}
+                {transactionstatus ? (
+                  <Box>
+                    <Typography variant="body1">
+                      Transaction{" "}
+                      {!!transactionstatus ? "Successful" : "Failed"} (Check
+                      the&nbsp;
+                      <Link
+                        href={etherscanLink}
+                        underline="hover"
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        transaction
+                      </Link>
+                      )
+                    </Typography>
+                    <Button fullWidth onClick={refreshPage} variant="outlined">
+                      Home
+                    </Button>
+                  </Box>
+                ) : (
+                  <LoadingButton
+                    fullWidth
+                    onClick={hasjoined ? leaveOnchainGroup : joinOnChainGroup}
                     variant="outlined"
+                    loading={loading}
                   >
-                    Home
-                  </Button>
-                </Box>
-              )}
+                    {hasjoined ? "Leave" : "Join"} Group
+                  </LoadingButton>
+                )}
+              </StepContent>
             </Step>
           </Stepper>
           <Paper className={classes.results} sx={{ p: 3 }}>

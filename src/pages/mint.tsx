@@ -2,7 +2,7 @@ import type { NextPage } from "next"
 import { Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import detectEthereumProvider from "@metamask/detect-provider"
-import { Link, TextField } from "@mui/material"
+import { Link } from "@mui/material"
 import { Signer, ethers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 )
 
-const Proof: NextPage = () => {
+const Mint: NextPage = () => {
   const classes = useStyles()
 
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
@@ -76,18 +76,13 @@ const Proof: NextPage = () => {
   >()
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
-  const [guestSignal, setGuestSignal] = useState<string>("")
-  const [guestBook, setGuestBook] = useState<string[]>([])
-  const [openGuestBook, setOpenGuestBook] = useState<boolean>(false)
 
   const {
-    proveMembership,
-    loadGuestBook,
+    mintNFT,
     loading,
     etherscanLink,
     transactionstatus
   } = useOnChainGroups()
-
   useEffect(() => {
     ;(async function IIFE() {
       if (!_ethereumProvider) {
@@ -124,15 +119,8 @@ const Proof: NextPage = () => {
     })()
   }, [_ethereumProvider])
 
-  function handleNext() {
-    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
-    setError(undefined)
-  }
-
   async function connect() {
-    const accounts = await _ethereumProvider.request({
-      method: "eth_requestAccounts"
-    })
+    const accounts = await _ethereumProvider.request({ method: "eth_requestAccounts" })
     await _ethereumProvider.request({
       method: "wallet_switchEthereumChain",
       params: [
@@ -145,38 +133,22 @@ const Proof: NextPage = () => {
     handleNext()
   }
 
-  const getMembershipProof = async () => {
-    try {
-      const hasMembership =
-        _signer && (await proveMembership(_signer, guestSignal))
-      console.log(hasMembership)
+  const mintNft = async () => {
+    try{
+    _signer && await mintNFT(_signer)
+
+
     } catch (e) {
       setError({
         errorStep: _activeStep,
-        message: "membership proof Failed - " + e.message
+        message: "mint failed - " + e
       })
     }
   }
 
-  const getSignal = (e) => {
-    e.preventDefault()
-    console.log(guestSignal)
-    handleNext()
-  }
-
-  const printGuestBook = async () => {
-    try {
-      const signalList = await loadGuestBook()
-      if (signalList) {
-        setGuestBook(signalList)
-      }
-      setOpenGuestBook(true)
-    } catch (e) {
-      setError({
-        errorStep: _activeStep,
-        message: "Can't load the guestBook - " + e.message
-      })
-    }
+  function handleNext() {
+    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
+    setError(undefined)
   }
 
   return (
@@ -223,64 +195,17 @@ const Proof: NextPage = () => {
             </StepContent>
           </Step>
           <Step>
-            <StepLabel error={_error?.errorStep === 1}>Guestbook</StepLabel>
-            <StepContent style={{ width: 400 }}>
-              <form onSubmit={getSignal} style={{ width: 400 }}>
-                <TextField
-                  required
-                  id="guest-book"
-                  label="Write your nickname"
-                  variant="filled"
-                  inputProps={{ maxLength: 30 }}
-                  onInput={(e) => {
-                    setGuestSignal(e.target.value)
-                  }}
-                  style={{ width: 300, height: 50 }}
-                />
-                <Button
-                  type="submit"
-                  variant="outlined"
-                  style={{ width: 100, height: 55 }}
-                >
-                  Submit
-                </Button>
-              </form>
-            </StepContent>
-          </Step>
-          <Step>
-            <StepLabel error={_error?.errorStep === 2}>
-              Proof Membership
+            <StepLabel error={_error?.errorStep === 1}>
+              Mint NFT
             </StepLabel>
             <StepContent style={{ width: 400 }}>
-              {transactionstatus ? (
-                <Box>
-                  <Typography variant="body1">
-                    Transaction {!!transactionstatus ? "Successful" : "Failed"}{" "}
-                    (Check the&nbsp;
-                    <Link
-                      href={etherscanLink}
-                      underline="hover"
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      transaction
-                    </Link>
-                    )
-                  </Typography>
-                  <Button fullWidth variant="outlined" onClick={printGuestBook}>
-                    Print Guest Book
-                  </Button>
-                </Box>
-              ) : (
-                <LoadingButton
-                  fullWidth
-                  onClick={getMembershipProof}
-                  variant="outlined"
-                  loading={loading}
-                >
-                  Proof Membership
-                </LoadingButton>
-              )}
+              <Button
+                fullWidth
+                onClick={mintNft}
+                variant="outlined"
+              >
+                Mint NFT
+              </Button>
             </StepContent>
           </Step>
         </Stepper>
@@ -291,18 +216,9 @@ const Proof: NextPage = () => {
             )}
           </Paper>
         )}
-        {openGuestBook && (
-          <Paper className={classes.results} sx={{ p: 3 }}>
-            {guestBook.map((guest, index) => (
-              <Typography variant="body1" key={index}>
-                {guest}
-              </Typography>
-            ))}
-          </Paper>
-        )}
       </Box>
     </Paper>
   )
 }
 
-export default Proof
+export default Mint

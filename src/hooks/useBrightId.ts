@@ -3,7 +3,6 @@ import { Contract, providers, Signer, utils } from "ethers"
 import { formatBytes32String } from "ethers/lib/utils"
 import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
-import stringify from "fast-json-stable-stringify"
 import { sponsor } from "brightid_sdk"
 import { VerificationsApiResponse } from "src/types"
 
@@ -14,7 +13,7 @@ const provider = new providers.JsonRpcProvider(
 )
 
 const BrightidInterepContract = new Contract(
-  "0xc031D67F28FD31163aB91283bb4a3A977a26FBc0",
+  "0xfe795B30F4A6c7D9162C4D618A6335C140DEf9e9",
   BrightidInterep.abi,
   provider
 )
@@ -30,17 +29,6 @@ type ReturnParameters = {
   etherscanLink?: string
   transactionstatus?: boolean
   loading: boolean
-}
-
-const getMessage = (op: any) => {
-  const signedOp: any = {}
-  for (let k in op) {
-    if (["sig", "sig1", "sig2", "hash"].includes(k)) {
-      continue
-    }
-    signedOp[k] = op[k]
-  }
-  return stringify(signedOp)
 }
 
 export default function useBrightId(): ReturnParameters {
@@ -134,6 +122,7 @@ export default function useBrightId(): ReturnParameters {
       return null
     }
   }, [])
+  
   return {
     getBrightIdUserData,
     selfSponsor,
