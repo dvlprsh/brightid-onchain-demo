@@ -52,7 +52,7 @@ type ReturnParameters = {
   proveMembership: (signer: Signer, signal: string) => Promise<any>
   mintNFT: (signer: Signer) => Promise<any>
   loadGuestBook: () => Promise<string[] | null>
-  etherscanLink: string
+  etherscanLink?: string
   transactionstatus?: boolean
   hasjoined: boolean
   loading: boolean
@@ -171,7 +171,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const receipt = await provider.waitForTransaction(transaction.hash)
       console.log(receipt.status)
 
-      setTransactionStatus(receipt.status)
+      setTransactionStatus(!!receipt.status)
 
       setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
@@ -215,7 +215,7 @@ export default function useOnChainGroups(): ReturnParameters {
         const transaction = await BrightidInterepContract.connect(signer).leaveMessage(GROUPID, formatBytes32String(signal), publicSignals.nullifierHash, externalNullifier, solidityProof)
         const receipt = await provider.waitForTransaction(transaction.hash)
         console.log(receipt)
-        setTransactionStatus(receipt.status)
+        setTransactionStatus(!!receipt.status)
         setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
         setLoading(false)
         return true
