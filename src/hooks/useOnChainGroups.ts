@@ -217,7 +217,7 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       setLoading(true)
-      const externalNullifier = "1"
+      const externalNullifier = "11"
       
       try {
         const response = await fetch(

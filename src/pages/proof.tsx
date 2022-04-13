@@ -77,6 +77,8 @@ const Proof: NextPage = () => {
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
   const [guestSignal, setGuestSignal] = useState<string>("")
+  const [guestBook, setGuestBook] = useState<string[]>([])
+  const [openGuestBook, setOpenGuestBook] = useState<boolean>(false)
 
   const { proveMembership, loading, etherscanLink, transactionstatus } =
     useOnChainGroups()
@@ -117,6 +119,11 @@ const Proof: NextPage = () => {
     })()
   }, [_ethereumProvider])
 
+  function handleNext() {
+    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
+    setError(undefined)
+  }
+
   async function connect() {
     const accounts = await _ethereumProvider.request({
       method: "eth_requestAccounts"
@@ -133,12 +140,6 @@ const Proof: NextPage = () => {
     handleNext()
   }
 
-  const getSignal = (e) => {
-    e.preventDefault()
-    console.log(guestSignal)
-    handleNext()
-  }
-
   const getMembershipProof = async () => {
     try {
       const hasMembership =
@@ -152,9 +153,16 @@ const Proof: NextPage = () => {
     }
   }
 
-  function handleNext() {
-    setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
-    setError(undefined)
+  const getSignal = (e) => {
+    e.preventDefault()
+    console.log(guestSignal)
+    handleNext()
+  }
+
+  const printGuestBook = () => {
+    const signalList = ["Nakamoto Satoshi", "Vitalik Buterin", "Insun Yu", "Hello!!", "🔥🔥🔥🔥"]
+    setGuestBook(signalList)
+    setOpenGuestBook(true)
   }
 
   return (
@@ -245,7 +253,11 @@ const Proof: NextPage = () => {
                     </Link>
                     )
                   </Typography>
-                  <Button fullWidth variant="outlined">
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={printGuestBook}
+                  >
                     Print Guest Book
                   </Button>
                 </Box>
@@ -267,6 +279,13 @@ const Proof: NextPage = () => {
             {_error.message && (
               <Typography variant="body1">{_error.message}</Typography>
             )}
+          </Paper>
+        )}
+        {openGuestBook && (
+          <Paper className={classes.results} sx={{ p: 3 }}>
+            {guestBook.map((guest, index) => (
+              <Typography variant="body1" key={index}>{guest}</Typography>
+            ))}
           </Paper>
         )}
       </Box>
