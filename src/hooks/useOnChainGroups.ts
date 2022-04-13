@@ -39,8 +39,8 @@ const BrightidInterepContract = new Contract(
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "35"//formatUint248String("brightidv1")
-const EX_NULLIFIER = BigInt(formatUint248String("guessbook-test"))//guessbook-season1
+const GROUPID = formatUint248String("brightidv1")
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-test"))//guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
@@ -275,9 +275,13 @@ export default function useOnChainGroups(): ReturnParameters {
         const {publicSignals, solidityProof} = response
         console.log(publicSignals)
         console.log(solidityProof)
-        //const tx = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof,GROUPID)
-        //const receipt = await provider.waitForTransaction(tx)
-        //console.log(receipt)
+        const transaction = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof,GROUPID)
+        const receipt = await provider.waitForTransaction(transaction.hash)
+        console.log(receipt)
+        setTransactionStatus(!!receipt.status)
+        setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
+        setLoading(false)
+        return true
       } catch (error) {
         setLoading(false)
         throw error
