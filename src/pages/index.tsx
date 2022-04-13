@@ -3,7 +3,10 @@ import Link from "next/link"
 import { createTheme, ThemeProvider, Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
 import { Paper, Box, Typography } from "@mui/material"
-import React from "react"
+import React, { useEffect, useState } from "react"
+import Image from "next/image"
+import logo from "../img/logo.png"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,17 +56,27 @@ const theme = createTheme({
 
 const Home: NextPage = () => {
   const classes = useStyles()
+  const { memberCount } = useOnChainGroups()
+  const [member, setMember] = useState<number>()
+  useEffect(() => {
+    ;(async () => {
+      const members = await memberCount()
+      if (members) {
+        setMember(members)
+      }
+    })()
+  }, [memberCount])
 
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
         <Box className={classes.content}>
-          <Typography variant="h4" sx={{ mb: 2 }}>
-            Interep On-chain group with BrightID
-          </Typography>
+          <Box sx={{ width: 500 }}>
+            <Image src={logo} alt="interep X BrihtID" layout="responsive" />
+          </Box>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-            "brightidv1" on-chain group has {} members
+            "brightidv1" on-chain group has {member} members
           </Typography>
           <Typography variant="body1" sx={{ mb: 4 }}>
             <div>
