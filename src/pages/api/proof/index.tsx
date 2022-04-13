@@ -20,8 +20,8 @@ const handleMembershipProof = async (
 
   try {
     const zkFiles = {
-      wasmFilePath: path.join(getConfig().serverRuntimeConfig.PROJECT_ROOT, "../public", "semaphore.wasm"),
-      zkeyFilePath: path.join(getConfig().serverRuntimeConfig.PROJECT_ROOT, "../public", "semaphore_final.zkey")
+      wasmFilePath: "/public/semaphore.wasm",
+      zkeyFilePath: "/static/semaphore.wasm",
     }
 
     const identity = new ZkIdentity(Strategy.MESSAGE, message)
