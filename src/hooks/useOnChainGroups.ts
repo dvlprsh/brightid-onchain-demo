@@ -53,7 +53,7 @@ type ReturnParameters = {
   mintNFT: (signer: Signer) => Promise<any>
   loadGuestBook: () => Promise<string[] | null>
   etherscanLink: string
-  transactionstatus: number | undefined
+  transactionstatus?: boolean
   hasjoined: boolean
   loading: boolean
 }
@@ -123,9 +123,8 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
-      console.log(receipt.status)
 
-      setTransactionStatus(receipt.status)
+      setTransactionStatus(!!receipt.status)
 
       setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)

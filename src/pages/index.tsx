@@ -368,11 +368,11 @@ const Home: NextPage = () => {
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                {transactionstatus ? (
+                {_transactionstatus ? (
                   <Box>
                     <Typography variant="body1">
                       Transaction{" "}
-                      {!!transactionstatus ? "Successful" : "Failed"} (Check
+                      {!!_transactionstatus ? "Successful" : "Failed"} (Check
                       the&nbsp;
                       <Link
                         href={etherscanLink}
