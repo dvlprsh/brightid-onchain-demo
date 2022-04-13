@@ -21,6 +21,7 @@
     "@mui/lab": "^5.0.0-alpha.73",
     "@mui/material": "^5.5.1",
     "@mui/styles": "^5.5.1",
+    "@netlify/plugin-nextjs": "^4.3.2",
     "@openzeppelin/contracts": "^4.5.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
