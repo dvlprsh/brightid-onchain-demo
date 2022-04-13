@@ -39,7 +39,7 @@ const BrightidInterepContract = new Contract(
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "3535"//formatUint248String("brightidv1")
+const GROUPID = "35"//formatUint248String("brightidv1")
 const EX_NULLIFIER = BigInt(formatUint248String("guessbook-test"))//guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
@@ -189,7 +189,7 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       setLoading(true)
-      const externalNullifier = "11"
+      const externalNullifier = "12"
       
       try {
         const response = await fetch(
@@ -295,6 +295,7 @@ export default function useOnChainGroups(): ReturnParameters {
     leaveGroup,
     proveMembership,
     mintNFT,
+    loadGuestBook,
     etherscanLink: _link,
     transactionstatus: _transactionStatus,
     hasjoined: _hasjoined,

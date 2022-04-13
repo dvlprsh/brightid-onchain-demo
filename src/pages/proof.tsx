@@ -80,8 +80,13 @@ const Proof: NextPage = () => {
   const [guestBook, setGuestBook] = useState<string[]>([])
   const [openGuestBook, setOpenGuestBook] = useState<boolean>(false)
 
-  const { proveMembership, loadGuestBook, loading, etherscanLink, transactionstatus } =
-    useOnChainGroups()
+  const {
+    proveMembership,
+    loadGuestBook,
+    loading,
+    etherscanLink,
+    transactionstatus
+  } = useOnChainGroups()
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -159,12 +164,14 @@ const Proof: NextPage = () => {
     handleNext()
   }
 
-  const printGuestBook = () => {
-    try{
-    const signalList = loadGuestBook()
-    setGuestBook(signalList)
-    setOpenGuestBook(true)
-    } catch(e) {
+  const printGuestBook = async () => {
+    try {
+      const signalList = await loadGuestBook()
+      if (signalList) {
+        setGuestBook(signalList)
+      }
+      setOpenGuestBook(true)
+    } catch (e) {
       setError({
         errorStep: _activeStep,
         message: "Can't load the guestBook - " + e.message
@@ -260,11 +267,7 @@ const Proof: NextPage = () => {
                     </Link>
                     )
                   </Typography>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={printGuestBook}
-                  >
+                  <Button fullWidth variant="outlined" onClick={printGuestBook}>
                     Print Guest Book
                   </Button>
                 </Box>
@@ -291,7 +294,9 @@ const Proof: NextPage = () => {
         {openGuestBook && (
           <Paper className={classes.results} sx={{ p: 3 }}>
             {guestBook.map((guest, index) => (
-              <Typography variant="body1" key={index}>{guest}</Typography>
+              <Typography variant="body1" key={index}>
+                {guest}
+              </Typography>
             ))}
           </Paper>
         )}
