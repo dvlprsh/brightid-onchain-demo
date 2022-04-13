@@ -52,6 +52,7 @@ type ReturnParameters = {
   proveMembership: (signer: Signer, signal: string) => Promise<any>
   mintNFT: (signer: Signer) => Promise<any>
   loadGuestBook: () => Promise<string[] | null>
+  memberCount: () => Promise<number | null>
   etherscanLink?: string
   transactionstatus?: boolean
   hasjoined: boolean
@@ -290,6 +291,14 @@ export default function useOnChainGroups(): ReturnParameters {
     []
   )
 
+  const memberCount = useCallback(
+    async () => {
+      const api = new OnchainAPI()
+      const { size } = await api.getGroup({ id: GROUPID })
+      return size
+    },[]
+  )
+
 
   return {
     retrieveIdentityCommitment,
@@ -299,6 +308,7 @@ export default function useOnChainGroups(): ReturnParameters {
     proveMembership,
     mintNFT,
     loadGuestBook,
+    memberCount,
     etherscanLink: _link,
     transactionstatus: _transactionStatus,
     hasjoined: _hasjoined,
