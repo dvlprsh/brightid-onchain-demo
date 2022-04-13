@@ -40,7 +40,7 @@ const BrightidInterepContract = new Contract(
 
 //const GROUP_NAME = "brightidv1"
 const GROUPID = formatUint248String("brightidv1")
-const EX_NULLIFIER = BigInt(formatUint248String("guestbook-test"))//guessbook-season1
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))//guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
