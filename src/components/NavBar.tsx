@@ -100,6 +100,7 @@ export default function NavBar(): JSX.Element {
               variant="contained"
               color="primary"
               onClick={() => activate(injectedConnector)}
+              sx={{marginRight: 10}}
             >
               Connect Wallet
             </Button>
