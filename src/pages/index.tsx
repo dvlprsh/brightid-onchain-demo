@@ -87,6 +87,8 @@ const Home: NextPage = () => {
   const [verified, setVerified] = useState<boolean>(false)
   const [_signer, setSigner] = useState<Signer>()
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
+  const [_transactionstatus, setTransactionstatus] = useState<boolean>()
+  const [_etherscanLink, setEtherscanLink] = useState<string>()
 
   const {
     signMessage,
@@ -99,17 +101,43 @@ const Home: NextPage = () => {
     transactionstatus
   } = useOnChainGroups()
 
-  const { getBrightIdUserData, selfSponsor, registerBrightId } = useBrightId()
+  const {
+    getBrightIdUserData,
+    selfSponsor,
+    registerBrightId,
+    checkBrightid,
+    transactionstatus: brightIdTransactionstatus,
+    loading: brightIdLoading,
+    etherscanLink: brightIdEtherscanLink
+  } = useBrightId()
+
+  useEffect(() => {
+    if (brightIdTransactionstatus !== undefined) {
+      setTransactionstatus(brightIdTransactionstatus)
+    }
+  }, [brightIdTransactionstatus])
+
+  useEffect(() => {
+    if (transactionstatus !== undefined) {
+      setTransactionstatus(transactionstatus)
+    }
+  }, [transactionstatus])
+
+  useEffect(() => {
+    etherscanLink && setEtherscanLink(etherscanLink)
+  }, [etherscanLink])
+
+  useEffect(() => {
+    brightIdEtherscanLink && setEtherscanLink(brightIdEtherscanLink)
+  }, [brightIdEtherscanLink])
 
   useEffect(() => {
     ;(async () => {
       setError(undefined)
 
-      try {
-        if (_activeStep === 1 && account) {
-          await checkVerification(account)
-        }
-      } catch (e) {}
+      if (_activeStep === 1 && account) {
+        await checkVerification(account)
+      }
     })()
   }, [_activeStep, account])
 
@@ -175,8 +203,6 @@ const Home: NextPage = () => {
 
       if (!identityCommitment) return
 
-      //await registerBrightId(_signer)
-
       setIdentityCommitment(identityCommitment)
       identityCommitment && setActiveStep(3)
     } catch (e) {
@@ -225,20 +251,24 @@ const Home: NextPage = () => {
   }
 
   const checkVerification = async (address: string) => {
-    const brightIdUser = await getBrightIdUserData(address)
-    const isVerified = brightIdUser.data?.unique
+    const isRegistered = await checkBrightid(address)
 
-    if (isVerified) {
-      setVerified(isVerified)
+    if (isRegistered) {
       setActiveStep(2)
-    } else {
-      throw Error("You're not linked with BrightID correctly.")
+      setVerified(true)
     }
   }
 
-  const handleClickCheckVerification = async () => {
+  const registerBrightIdOnChain = async () => {
     try {
-      account && (await checkVerification(account))
+      if (!_signer || !account) return
+
+      const isSuccess = await registerBrightId(_signer)
+
+      if (isSuccess) {
+        setActiveStep(2)
+        setVerified(true)
+      }
     } catch (e) {
       setError({
         errorStep: _activeStep,
@@ -248,9 +278,9 @@ const Home: NextPage = () => {
   }
 
   const refreshPage = () => {
-    window.location.reload();
+    window.location.reload()
   }
-
+  
   return (
     <ThemeProvider theme={theme}>
       <Paper className={classes.container} elevation={0} square={true}>
@@ -307,13 +337,14 @@ const Home: NextPage = () => {
                   ) : (
                     <Typography>error</Typography>
                   )}
-                  <Button
-                    onClick={handleClickCheckVerification}
+                  <LoadingButton
+                    onClick={registerBrightIdOnChain}
                     variant="outlined"
                     disabled={!account}
+                    loading={brightIdLoading}
                   >
-                    Check Verification
-                  </Button>
+                    Register BrightID On-Chain
+                  </LoadingButton>
                 </Paper>
               </StepContent>
             </Step>
@@ -347,12 +378,13 @@ const Home: NextPage = () => {
                   {hasjoined ? "Leave" : "Join"} Group
                 </LoadingButton>
               </StepContent>
-              {transactionstatus && (
+              {_transactionstatus !== undefined && (
                 <Box>
                   <Typography variant="body1">
-                    Transaction {transactionstatus ? "Successful" : "Failed"} (Check the&nbsp;
+                    Transaction {_transactionstatus ? "Successful" : "Failed"}{" "}
+                    (Check the&nbsp;
                     <Link
-                      href={etherscanLink}
+                      href={_etherscanLink}
                       underline="hover"
                       rel="noreferrer"
                       target="_blank"

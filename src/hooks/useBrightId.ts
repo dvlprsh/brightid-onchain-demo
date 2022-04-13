@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Contract, providers, Signer } from "ethers"
+import { Contract, providers, Signer, utils } from "ethers"
 import { formatBytes32String } from "ethers/lib/utils"
 import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
@@ -25,9 +25,10 @@ const privateKey = getNextConfig().publicRuntimeConfig.brightIdApiKey || ""
 type ReturnParameters = {
   getBrightIdUserData: (address: string) => Promise<any>
   selfSponsor: (address: string) => Promise<any>
-  registerBrightId: (signer: Signer) => Promise<any>
-  etherscanLink: string
-  transactionstatus: boolean
+  registerBrightId: (signer: Signer) => Promise<boolean>
+  checkBrightid: (address: string) => Promise<any>
+  etherscanLink?: string
+  transactionstatus?: boolean
   loading: boolean
 }
 
@@ -44,8 +45,8 @@ const getMessage = (op: any) => {
 
 export default function useBrightId(): ReturnParameters {
   const [_loading, setLoading] = useState<boolean>(false)
-  const [_link, setEtherscanLink] = useState<string>("")
-  const [_transactionStatus, setTransactionStatus] = useState<boolean>(false)
+  const [_link, setEtherscanLink] = useState<string>()
+  const [_transactionStatus, setTransactionStatus] = useState<boolean>()
 
   const getBrightIdUserData = useCallback(
     async (address: string): Promise<VerificationsApiResponse | null> => {
@@ -63,28 +64,60 @@ export default function useBrightId(): ReturnParameters {
     []
   )
 
-  const registerBrightId = useCallback(async (signer: Signer) => {
+  const checkBrightid = useCallback(
+    async (address: string): Promise<boolean | null> => {
+      try {
+        const isRegistered = await BrightidInterepContract.isVerifiedUser(
+          address
+        )
+
+        return isRegistered
+      } catch (error) {
+        console.error(error)
+        setLoading(false)
+        return null
+      }
+    },
+    []
+  )
+
+  const registerBrightId = useCallback(async (signer: Signer): Promise<boolean> => {
     try {
       setLoading(true)
 
-      const response = await getBrightIdUserData(await signer.getAddress())
+      const brightIdUser = await getBrightIdUserData(await signer.getAddress())
 
-      if (!response?.data) throw new Error()
+      if (!brightIdUser?.data) throw new Error()
 
       const {
         contextIds,
         sig: { r, s, v },
-        timestamp
-      } = response?.data
+        timestamp,
+        unique: isVerified
+      } = brightIdUser.data
 
-      const transaction = await BrightidInterepContract.connect(signer)
-      .register(formatBytes32String(CONTEXT), contextIds, timestamp, v, "0x"+r, "0x"+s)
+      if(!isVerified)  throw Error("You're not linked with BrightID correctly.")
+
+      const transaction = await BrightidInterepContract.connect(
+        signer
+      ).register(
+        formatBytes32String(CONTEXT),
+        contextIds,
+        timestamp,
+        v,
+        "0x" + r,
+        "0x" + s,
+        { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 }
+      )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
+      const isSuccess = !!receipt.status
 
-      setTransactionStatus(!!receipt.status)
+      setTransactionStatus(isSuccess)
       setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
       setLoading(false)
+
+      return isSuccess
     } catch (error) {
       setLoading(false)
       throw error
@@ -105,6 +138,7 @@ export default function useBrightId(): ReturnParameters {
     getBrightIdUserData,
     selfSponsor,
     registerBrightId,
+    checkBrightid,
     etherscanLink: _link,
     transactionstatus: _transactionStatus,
     loading: _loading

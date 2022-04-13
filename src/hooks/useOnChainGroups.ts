@@ -50,16 +50,16 @@ type ReturnParameters = {
   joinGroup: (identityCommitment: string) => Promise<true | null>
   leaveGroup: (identityCommitment: string) => Promise<true | null>
   proveMembership: (signer: Signer) => Promise<boolean | undefined>
-  etherscanLink: string
-  transactionstatus: boolean
+  etherscanLink?: string
+  transactionstatus?: boolean
   hasjoined: boolean
   loading: boolean
 }
 
 export default function useOnChainGroups(): ReturnParameters {
   const [_loading, setLoading] = useState<boolean>(false)
-  const [_link, setEtherscanLink] = useState<string>("")
-  const [_transactionStatus, setTransactionStatus] = useState<boolean>(false)
+  const [_link, setEtherscanLink] = useState<string>()
+  const [_transactionStatus, setTransactionStatus] = useState<boolean>()
   const [_hasjoined, setHasjoined] = useState<boolean>(false)
 
   const signMessage = useCallback(
