@@ -12,6 +12,7 @@ import shortenAddress from "src/utils/shortenAddress"
 import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
+import Tooltip from "@mui/material/Tooltip"
 
 import { useWeb3React } from "@web3-react/core"
 import { InjectedConnector } from "@web3-react/injected-connector"
@@ -36,6 +37,10 @@ export default function NavBar(): JSX.Element {
   }
   const handleClose = () => {
     setAnchorEl(null)
+  }
+
+  const copyAccount = async () => {
+    await navigator.clipboard.writeText(account)
   }
 
   useEffect(() => {
@@ -85,9 +90,11 @@ export default function NavBar(): JSX.Element {
             </Menu>
           </Box>
           {account ? (
-            <Button variant="outlined" color="primary" sx={{marginRight: 10}}>
-              {shortenAddress(account)}
-            </Button>
+            <Tooltip disableFocusListener disableTouchListener title="Copy">
+              <Button variant="outlined" color="primary" onClick={copyAccount} sx={{marginRight: 10}}>
+                {shortenAddress(account)}
+              </Button>
+            </Tooltip>
           ) : (
             <Button
               variant="contained"
