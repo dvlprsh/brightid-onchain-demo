@@ -72,12 +72,10 @@ const Home: NextPage = () => {
 
   const _signer = useSigner()
   const { account } = useWeb3React<providers.Web3Provider>()
-  const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
   const [_error, setError] = useState<
     { errorStep: number; message?: string } | undefined
   >()
-  const [_loading, setLoading] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
   const [_transactionstatus, setTransactionstatus] = useState<boolean>()
@@ -283,7 +281,7 @@ const Home: NextPage = () => {
                       {!!_transactionstatus ? "Successful" : "Failed"} (Check
                       the&nbsp;
                       <Link
-                        href={etherscanLink}
+                        href={_etherscanLink}
                         underline="hover"
                         rel="noreferrer"
                         target="_blank"

@@ -1,9 +1,7 @@
 import type { NextPage } from "next"
 import { Theme } from "@mui/material/styles"
 import { createStyles, makeStyles } from "@mui/styles"
-import detectEthereumProvider from "@metamask/detect-provider"
 import { Link, TextField } from "@mui/material"
-import { Signer, ethers } from "ethers"
 import { LoadingButton } from "@mui/lab"
 import {
   Paper,
@@ -15,9 +13,10 @@ import {
   Button,
   StepContent
 } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
 import MousIcon from "@mui/icons-material/Mouse"
+import useSigner from "src/hooks/useSigner"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -62,13 +61,11 @@ const useStyles = makeStyles((theme: Theme) =>
 const Proof: NextPage = () => {
   const classes = useStyles()
 
-  const [_ethereumProvider, setEthereumProvider] = useState<any>()
+  const _signer = useSigner()
   const [_activeStep, setActiveStep] = useState<number>(0)
   const [_error, setError] = useState<
     { errorStep: number; message?: string } | undefined
   >()
-  const [account, setAccount] = useState<string>()
-  const [_signer, setSigner] = useState<Signer>()
   const [guestSignal, setGuestSignal] = useState<string>("")
   const [guestBook, setGuestBook] = useState<string[]>([])
   const [openGuestBook, setOpenGuestBook] = useState<boolean>(false)
@@ -80,38 +77,6 @@ const Proof: NextPage = () => {
     etherscanLink,
     transactionstatus
   } = useOnChainGroups()
-
-  useEffect(() => {
-    ;(async function IIFE() {
-      if (!_ethereumProvider) {
-        const ethereumProvider = (await detectEthereumProvider()) as any
-
-        if (ethereumProvider) {
-          setEthereumProvider(ethereumProvider)
-
-          const ethersProvider = new ethers.providers.Web3Provider(
-            ethereumProvider
-          )
-          const signer = ethersProvider && ethersProvider.getSigner()
-          setSigner(signer)
-        } else {
-          console.error("Please install Metamask!")
-        }
-      } else {
-        const accounts = await _ethereumProvider.request({
-          method: "eth_accounts"
-        })
-        const account = accounts[0]
-        setAccount(account)
-
-        _ethereumProvider.on("accountsChanged", (newAccounts: string[]) => {
-          if (newAccounts.length === 0) {
-            setActiveStep(0)
-          }
-        })
-      }
-    })()
-  }, [_ethereumProvider])
 
   function handleNext() {
     setActiveStep((prevActiveStep: number) => prevActiveStep + 1)
