@@ -122,7 +122,7 @@ const Mint: NextPage = () => {
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Mint NFT
+        Those with group membership can mint “brightidv1-nft” badge(only once)
         </Typography>
 
         {transactionstatus ? (

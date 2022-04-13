@@ -229,7 +229,7 @@ const Home: NextPage = () => {
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-            Link to BrightId
+          Pass BrightID verification and can interact with “brightidv1” group
           </Typography>
 
           <Stepper activeStep={_activeStep} orientation="vertical">

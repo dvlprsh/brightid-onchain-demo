@@ -162,7 +162,7 @@ const Proof: NextPage = () => {
         </Button>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          You can leave your nickname in the Guestbook by prooving membership
+          You can leave message in the Guestbook by prooving membership(only once)
         </Typography>
 
         <Stepper activeStep={_activeStep} orientation="vertical">
@@ -173,7 +173,7 @@ const Proof: NextPage = () => {
                 <TextField
                   required
                   id="guest-book"
-                  label="Write your nickname"
+                  label="leave guestbook"
                   variant="filled"
                   inputProps={{ maxLength: 30 }}
                   onInput={(e) => {
