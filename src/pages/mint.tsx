@@ -114,20 +114,50 @@ const Mint: NextPage = () => {
     }
   }
 
+  const refreshPage = () => {
+    window.location.reload()
+  }
+
   return (
     <Paper className={classes.container} elevation={0} square={true}>
       <Box className={classes.content}>
         <Typography variant="h4" sx={{ mb: 2 }}>
-          Interep On-chain group
+          Mint NFT
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Membership Proof
+          Mint NFT
         </Typography>
 
-        <Button fullWidth onClick={mintNft} variant="outlined">
-          Mint NFT
-        </Button>
+        {transactionstatus ? (
+          <Box>
+            <Typography variant="body1">
+              Transaction {!!transactionstatus ? "Successful" : "Failed"}{" "}
+              (Check the&nbsp;
+              <Link
+                href={etherscanLink}
+                underline="hover"
+                rel="noreferrer"
+                target="_blank"
+              >
+                transaction
+              </Link>
+              )
+            </Typography>
+            <Button fullWidth onClick={refreshPage} variant="outlined">
+              Home
+            </Button>
+          </Box>
+        ) : (
+          <LoadingButton
+            fullWidth
+            onClick={mintNft}
+            variant="outlined"
+            loading={loading}
+          >
+            Mint NFT
+          </LoadingButton>
+        )}
 
         {_error && (
           <Paper className={classes.results} sx={{ p: 3 }}>

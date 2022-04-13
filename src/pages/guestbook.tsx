@@ -155,11 +155,11 @@ const Proof: NextPage = () => {
     <Paper className={classes.container} elevation={0} square={true}>
       <Box className={classes.content}>
         <Typography variant="h4" sx={{ mb: 2 }}>
-          Interep On-chain group
+          Guest Book
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Membership Proof
+          Guest Book
         </Typography>
 
         <Stepper activeStep={_activeStep} orientation="vertical">

@@ -258,7 +258,7 @@ const Home: NextPage = () => {
       <Paper className={classes.container} elevation={0} square={true}>
         <Box className={classes.content}>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Interep On-chain group
+            Join/Leave Group
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>

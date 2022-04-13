@@ -17,7 +17,6 @@ import { InjectedConnector } from "@web3-react/injected-connector"
 import { providers } from "ethers"
 
 const pages = [
-  { title: "Join/Leave Group", path: "/join" },
   { title: "Guest Book", path: "/guestbook" },
   { title: "Mint NFT", path: "/mint" }
 ]
@@ -64,7 +63,7 @@ export default function NavBar(): JSX.Element {
               onClick={handleClick}
               sx={{ color: "white" }}
             >
-              Dashboard
+              Membership Proof
             </Button>
             <Menu
               anchorEl={anchorEl}
