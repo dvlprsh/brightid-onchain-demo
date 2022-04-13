@@ -154,7 +154,6 @@ const Home: NextPage = () => {
     try {
       if (!_signer || !_identityCommitment) return
 
-      setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
 
       if (userSignature) {
@@ -162,7 +161,6 @@ const Home: NextPage = () => {
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "join group Failed - " + e })
-      setLoading(false)
     }
   }
 
@@ -170,7 +168,6 @@ const Home: NextPage = () => {
     try {
       if (!_signer || !_identityCommitment) return
 
-      setLoading(true)
       const userSignature = await signMessage(_signer, _identityCommitment)
 
       if (userSignature) {
@@ -178,7 +175,6 @@ const Home: NextPage = () => {
       }
     } catch (e) {
       setError({ errorStep: _activeStep, message: "leave group Failed - " + e })
-      setLoading(false)
     }
   }
 
