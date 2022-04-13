@@ -156,10 +156,16 @@ const Proof: NextPage = () => {
       <Box className={classes.content}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Guest Book
+          <Button
+            variant="outlined"
+            onClick={printGuestBook}
+          >
+            open
+          </Button>
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Guest Book
+          You can leave your nickname in the Guestbook by prooving membership
         </Typography>
 
         <Stepper activeStep={_activeStep} orientation="vertical">
@@ -235,7 +241,7 @@ const Proof: NextPage = () => {
         {openGuestBook && (
           <Paper className={classes.results} sx={{ p: 3 }}>
             {guestBook.map((guest, index) => (
-              <Typography variant="body1" key={index}>
+              <Typography variant="body1" key={index} sx={{borderBottom:1}}>
                 {guest}
               </Typography>
             ))}

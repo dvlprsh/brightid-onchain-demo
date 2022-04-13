@@ -9,11 +9,7 @@ import {
   Paper,
   Box,
   Typography,
-  Stepper,
-  Step,
-  StepLabel,
   Button,
-  StepContent
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
