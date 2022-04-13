@@ -21,7 +21,7 @@ const handleMembershipProof = async (
   try {
     const zkFiles = {
       wasmFilePath:
-        "https://bright-id-on-chain.s3.ap-northeast-2.amazonaws.com/semaphore_final.zkey",
+        "https://image.shutterstock.com/image-photo/small-kettle-heated-on-bonfire-600w-1822074260.jpg",
       zkeyFilePath:
         "https://bright-id-on-chain.s3.ap-northeast-2.amazonaws.com/semaphore_final.zkey"
     }
