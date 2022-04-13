@@ -17,7 +17,8 @@ import { InjectedConnector } from "@web3-react/injected-connector"
 import { providers } from "ethers"
 
 const pages = [
-  { title: "Guest Book", path: "/proof" },
+  { title: "Join/Leave Group", path: "/join" },
+  { title: "Guest Book", path: "/guestbook" },
   { title: "Mint NFT", path: "/mint" }
 ]
 
