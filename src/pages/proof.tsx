@@ -80,7 +80,7 @@ const Proof: NextPage = () => {
   const [guestBook, setGuestBook] = useState<string[]>([])
   const [openGuestBook, setOpenGuestBook] = useState<boolean>(false)
 
-  const { proveMembership, loading, etherscanLink, transactionstatus } =
+  const { proveMembership, loadGuestBook, loading, etherscanLink, transactionstatus } =
     useOnChainGroups()
 
   useEffect(() => {
@@ -160,9 +160,16 @@ const Proof: NextPage = () => {
   }
 
   const printGuestBook = () => {
-    const signalList = ["Nakamoto Satoshi", "Vitalik Buterin", "Insun Yu", "Hello!!", "🔥🔥🔥🔥"]
+    try{
+    const signalList = loadGuestBook()
     setGuestBook(signalList)
     setOpenGuestBook(true)
+    } catch(e) {
+      setError({
+        errorStep: _activeStep,
+        message: "Can't load the guestBook - " + e.message
+      })
+    }
   }
 
   return (

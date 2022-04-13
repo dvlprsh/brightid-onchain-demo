@@ -39,8 +39,8 @@ const BrightidInterepContract = new Contract(
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "35"//formatUint248String("brightidv1")
-const SIGNAL = "brightidv1-nft"
+const GROUPID = "3535"//formatUint248String("brightidv1")
+const EX_NULLIFIER = BigInt(formatUint248String("guessbook-test"))//guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
@@ -51,6 +51,7 @@ type ReturnParameters = {
   leaveGroup: (identityCommitment: string) => Promise<true | null>
   proveMembership: (signer: Signer, signal: string) => Promise<any>
   mintNFT: (signer: Signer) => Promise<any>
+  loadGuestBook: () => Promise<string[] | null>
   etherscanLink: string
   transactionstatus: number | undefined
   hasjoined: boolean
@@ -62,7 +63,6 @@ export default function useOnChainGroups(): ReturnParameters {
   const [_link, setEtherscanLink] = useState<string>()
   const [_transactionStatus, setTransactionStatus] = useState<boolean>()
   const [_hasjoined, setHasjoined] = useState<boolean>(false)
-
   const signMessage = useCallback(
     async (signer: Signer, message: string): Promise<string | null> => {
       try {
@@ -89,34 +89,6 @@ export default function useOnChainGroups(): ReturnParameters {
         (message) => signer.signMessage(message),
         GROUPID
       )
-
-      /***************test***************** */
-
-      const startblock = 30970366
-
-      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(BigInt("2")))//externalnullifier
-      // const filter = InterepContract.filters.MemberAdded(
-      //   utils.hexlify(BigInt(GROUPID))
-      // )
-
-      const hi = await BrightidInterepContract.queryFilter(filter, startblock)
-
-      //first way
-      let myArray1 = []
-      console.log(hi)
-      for (let i = 0; i < hi.length; i++) {
-        myArray1.push(hi[i].args?.[1])
-      }
-      console.log(myArray1)
-
-      //second way
-      let myArray2 = []
-      for (let i = 0; i < hi.length; i++) {
-        myArray2.push(hi[i].data)
-      }
-      console.log(myArray2)
-
-      /***************************** */
 
       const identityCommitment = identity.genIdentityCommitment()
 
@@ -254,6 +226,23 @@ export default function useOnChainGroups(): ReturnParameters {
       }
     },
     []
+  )
+
+  const loadGuestBook = useCallback(
+    async () => {
+      const startblock = 30970366
+      console.log(EX_NULLIFIER)
+      console.log(utils.hexlify(EX_NULLIFIER))
+      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(BigInt("2")))//externalnullifier
+
+      const filterEvent = await BrightidInterepContract.queryFilter(filter, startblock)
+
+      let signalList = []
+      for (let i = 0; i < filterEvent.length; i++) {
+        signalList.push(utils.parseBytes32String(filterEvent[i].data))
+      }
+      return signalList
+    },[]
   )
 
   const mintNFT = useCallback(
