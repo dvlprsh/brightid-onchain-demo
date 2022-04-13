@@ -20,8 +20,10 @@ const handleMembershipProof = async (
 
   try {
     const zkFiles = {
-      wasmFilePath: path.join(__dirname, "..", "..", "semaphore.wasm"),
-      zkeyFilePath: path.join(__dirname, "..", "..", "semaphore_final.zkey")
+      wasmFilePath:
+        "https://bright-id-on-chain.s3.ap-northeast-2.amazonaws.com/semaphore_final.zkey",
+      zkeyFilePath:
+        "https://bright-id-on-chain.s3.ap-northeast-2.amazonaws.com/semaphore_final.zkey"
     }
 
     const identity = new ZkIdentity(Strategy.MESSAGE, message)
