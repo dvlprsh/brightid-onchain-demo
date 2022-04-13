@@ -188,7 +188,7 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       setLoading(true)
-      const externalNullifier = "12"
+      const externalNullifier = EX_NULLIFIER
       
       try {
         const response = await fetch(
@@ -232,7 +232,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const startblock = 30970366
       console.log(EX_NULLIFIER)
       console.log(utils.hexlify(EX_NULLIFIER))
-      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(BigInt("2")))//externalnullifier
+      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(EX_NULLIFIER))//externalnullifier
 
       const filterEvent = await BrightidInterepContract.queryFilter(filter, startblock)
 
@@ -275,7 +275,7 @@ export default function useOnChainGroups(): ReturnParameters {
         const {publicSignals, solidityProof} = response
         console.log(publicSignals)
         console.log(solidityProof)
-        const transaction = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof,GROUPID)
+        const transaction = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof)
         const receipt = await provider.waitForTransaction(transaction.hash)
         console.log(receipt)
         setTransactionStatus(!!receipt.status)
