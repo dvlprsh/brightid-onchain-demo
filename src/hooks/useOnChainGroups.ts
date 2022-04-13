@@ -7,7 +7,12 @@ import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "src/generatemerkleproof"
 import { HashZero } from "@ethersproject/constants"
-import { toUtf8Bytes, concat, hexlify, formatBytes32String } from "ethers/lib/utils"
+import {
+  toUtf8Bytes,
+  concat,
+  hexlify,
+  formatBytes32String
+} from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
 import * as qs from "qs"
 
@@ -40,7 +45,7 @@ const BrightidInterepContract = new Contract(
 
 //const GROUP_NAME = "brightidv1"
 const GROUPID = formatUint248String("brightidv1")
-const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))//guessbook-season1
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
@@ -74,7 +79,6 @@ export default function useOnChainGroups(): ReturnParameters {
         setLoading(false)
         return signedMessage
       } catch (error) {
-        console.error(error)
         setLoading(false)
         return null
       }
@@ -170,7 +174,6 @@ export default function useOnChainGroups(): ReturnParameters {
       )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
-      console.log(receipt.status)
 
       setTransactionStatus(!!receipt.status)
 
@@ -190,7 +193,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       setLoading(true)
       const externalNullifier = EX_NULLIFIER
-      
+
       try {
         const response = await fetch(
           `/api/proof${qs.stringify(
@@ -210,12 +213,18 @@ export default function useOnChainGroups(): ReturnParameters {
         if (response.error) {
           throw new Error(response.error)
         }
-        const {publicSignals, solidityProof} = response
-        console.log(publicSignals.nullifierHash)
-        console.log(solidityProof)
-        const transaction = await BrightidInterepContract.connect(signer).leaveMessage(GROUPID, formatBytes32String(signal), publicSignals.nullifierHash, externalNullifier, solidityProof)
+        const { publicSignals, solidityProof } = response
+        const transaction = await BrightidInterepContract.connect(
+          signer
+        ).leaveMessage(
+          GROUPID,
+          formatBytes32String(signal),
+          publicSignals.nullifierHash,
+          externalNullifier,
+          solidityProof
+        )
         const receipt = await provider.waitForTransaction(transaction.hash)
-        console.log(receipt)
+
         setTransactionStatus(!!receipt.status)
         setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
         setLoading(false)
@@ -228,77 +237,74 @@ export default function useOnChainGroups(): ReturnParameters {
     []
   )
 
-  const loadGuestBook = useCallback(
-    async () => {
-      const startblock = 30970366
-      console.log(EX_NULLIFIER)
-      console.log(utils.hexlify(EX_NULLIFIER))
-      const filter = BrightidInterepContract.filters.saveMessage(utils.hexlify(EX_NULLIFIER))//externalnullifier
+  const loadGuestBook = useCallback(async () => {
+    const startblock = 30970366
+    const filter = BrightidInterepContract.filters.saveMessage(
+      utils.hexlify(EX_NULLIFIER)
+    ) //externalnullifier
 
-      const filterEvent = await BrightidInterepContract.queryFilter(filter, startblock)
+    const filterEvent = await BrightidInterepContract.queryFilter(
+      filter,
+      startblock
+    )
 
-      let signalList = []
-      for (let i = 0; i < filterEvent.length; i++) {
-        signalList.push(utils.parseBytes32String(filterEvent[i].data))
-      }
-      return signalList
-    },[]
-  )
+    let signalList = []
+    for (let i = 0; i < filterEvent.length; i++) {
+      signalList.push(utils.parseBytes32String(filterEvent[i].data))
+    }
+    return signalList
+  }, [])
 
-  const mintNFT = useCallback(
-    async (signer: Signer, nonce = 0) => {
-      const message = await signer.signMessage(
-        `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
-      )
+  const mintNFT = useCallback(async (signer: Signer, nonce = 0) => {
+    const message = await signer.signMessage(
+      `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
+    )
 
-      setLoading(true)
+    setLoading(true)
 
-      try {
-        const response = await fetch(
-          `/api/proof${qs.stringify(
-            {
-              message,
-              groupId: GROUPID,
-              signal: "brightidv1-nft",
-              externalNullifier: GROUPID
-            },
-            { addQueryPrefix: true }
-          )}`,
+    try {
+      const response = await fetch(
+        `/api/proof${qs.stringify(
           {
-            method: "GET"
-          }
-        ).then((response) => response.json())
-
-        if (response.error) {
-          throw new Error(response.error)
+            message,
+            groupId: GROUPID,
+            signal: "brightidv1-nft",
+            externalNullifier: GROUPID
+          },
+          { addQueryPrefix: true }
+        )}`,
+        {
+          method: "GET"
         }
+      ).then((response) => response.json())
 
-        const {publicSignals, solidityProof} = response
-        console.log(publicSignals)
-        console.log(solidityProof)
-        const transaction = await BrightidInterepContract.connect(signer).mint(publicSignals.nullifierHash, solidityProof)
-        const receipt = await provider.waitForTransaction(transaction.hash)
-        console.log(receipt)
-        setTransactionStatus(!!receipt.status)
-        setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
-        setLoading(false)
-        return true
-      } catch (error) {
-        setLoading(false)
-        throw error
+      if (response.error) {
+        throw new Error(response.error)
       }
-    },
-    []
-  )
 
-  const memberCount = useCallback(
-    async () => {
-      const api = new OnchainAPI()
-      const { size } = await api.getGroup({ id: GROUPID })
-      return size
-    },[]
-  )
+      const { publicSignals, solidityProof } = response
 
+      const transaction = await BrightidInterepContract.connect(signer).mint(
+        publicSignals.nullifierHash,
+        solidityProof
+      )
+      const receipt = await provider.waitForTransaction(transaction.hash)
+
+      setTransactionStatus(!!receipt.status)
+      setEtherscanLink("https://kovan.etherscan.io/tx/" + transaction.hash)
+      setLoading(false)
+      return true
+    } catch (error) {
+      setLoading(false)
+      throw error
+    }
+  }, [])
+
+  const memberCount = useCallback(async () => {
+    const api = new OnchainAPI()
+    const { size } = await api.getGroup({ id: GROUPID })
+    return size
+  }, [])
 
   return {
     retrieveIdentityCommitment,

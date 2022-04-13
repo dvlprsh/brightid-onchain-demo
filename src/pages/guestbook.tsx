@@ -17,7 +17,7 @@ import {
 } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
-import MousIcon from '@mui/icons-material/Mouse'
+import MousIcon from "@mui/icons-material/Mouse"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -122,7 +122,6 @@ const Proof: NextPage = () => {
     try {
       const hasMembership =
         _signer && (await proveMembership(_signer, guestSignal))
-      console.log(hasMembership)
     } catch (e) {
       setError({
         errorStep: _activeStep,
@@ -131,9 +130,8 @@ const Proof: NextPage = () => {
     }
   }
 
-  const getSignal = (e) => {
+  const getSignal = (e: any) => {
     e.preventDefault()
-    console.log(guestSignal)
     handleNext()
   }
 
@@ -155,14 +153,19 @@ const Proof: NextPage = () => {
   return (
     <Paper className={classes.container} elevation={0} square={true}>
       <Box className={classes.content}>
-        <Button onClick={printGuestBook} sx={{ color: "white" }} endIcon={<MousIcon />}>
+        <Button
+          onClick={printGuestBook}
+          sx={{ color: "white" }}
+          endIcon={<MousIcon />}
+        >
           <Typography variant="h4" sx={{ mb: 2 }}>
             Guest Book
           </Typography>
         </Button>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          You can leave message in the Guestbook by prooving membership(only once)
+          You can leave message in the Guestbook by prooving membership(only
+          once)
         </Typography>
 
         <Stepper activeStep={_activeStep} orientation="vertical">
