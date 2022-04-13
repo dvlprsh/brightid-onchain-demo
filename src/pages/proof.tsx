@@ -71,17 +71,15 @@ const Proof: NextPage = () => {
 
   const [_ethereumProvider, setEthereumProvider] = useState<any>()
   const [_activeStep, setActiveStep] = useState<number>(0)
-  const [_error, setError] = useState<{ errorStep: number; message?: string } | undefined>()
+  const [_error, setError] = useState<
+    { errorStep: number; message?: string } | undefined
+  >()
   const [account, setAccount] = useState<string>()
   const [_signer, setSigner] = useState<Signer>()
   const [guestSignal, setGuestSignal] = useState<string>("")
 
-  const {
-    proveMembership,
-    loading,
-    etherscanLink,
-    transactionstatus
-  } = useOnChainGroups()
+  const { proveMembership, loading, etherscanLink, transactionstatus } =
+    useOnChainGroups()
 
   useEffect(() => {
     ;(async function IIFE() {
@@ -232,19 +230,11 @@ const Proof: NextPage = () => {
               Proof Membership
             </StepLabel>
             <StepContent style={{ width: 400 }}>
-              <LoadingButton
-                fullWidth
-                onClick={getMembershipProof}
-                variant="outlined"
-                disabled={transactionstatus}
-                loading={loading}
-              >
-                Proof Membership
-              </LoadingButton>
-              {transactionstatus && (
+              {transactionstatus ? (
                 <Box>
                   <Typography variant="body1">
-                    Transaction {transactionstatus ? "Successful" : "Failed"} (Check the&nbsp;
+                    Transaction {!!transactionstatus ? "Successful" : "Failed"}{" "}
+                    (Check the&nbsp;
                     <Link
                       href={etherscanLink}
                       underline="hover"
@@ -255,13 +245,19 @@ const Proof: NextPage = () => {
                     </Link>
                     )
                   </Typography>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                  >
+                  <Button fullWidth variant="outlined">
                     Print Guest Book
                   </Button>
                 </Box>
+              ) : (
+                <LoadingButton
+                  fullWidth
+                  onClick={getMembershipProof}
+                  variant="outlined"
+                  loading={loading}
+                >
+                  Proof Membership
+                </LoadingButton>
               )}
             </StepContent>
           </Step>
