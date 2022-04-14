@@ -17,7 +17,7 @@ const nextConfig = {
       test: /\.(zkey|wasm)$/i,
       loader: "file-loader",
       options: {
-        //publicPath: './dist/',
+        publicPath: './public/',
         name: '[name].[ext]',
       }
     })
