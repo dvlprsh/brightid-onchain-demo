@@ -18,7 +18,7 @@ const nextConfig = {
       loader: "file-loader",
       options: {
         //publicPath: './dist/',
-        name: '[name].[ext]?[hash]',
+        name: '[name].[ext]',
       }
     })
 
