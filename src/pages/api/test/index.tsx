@@ -21,8 +21,6 @@ const handleMembershipProof = async (
   const { message, groupId, signal, externalNullifier } =
     req.query as unknown as Query
 
-  const hi2 = require.resolve("public/semaphore_final.zkey")
-  const hi3 = require("static/semaphore.wasm")
   console.log(
     "data2",
     __dirname,
@@ -36,8 +34,8 @@ const handleMembershipProof = async (
     res.status(200).json({
       dir: __dirname,
       serverDir: getNextConfig().serverRuntimeConfig.PROJECT_ROOT,
-      test: require.resolve("public/semaphore.wasm"),
-      test2: require.resolve("public/semaphore_final.zkey"),
+      // test: require.resolve("public/semaphore.wasm"),
+      // test2: require.resolve("public/semaphore_final.zkey"),
     })
   } catch (e) {
     res.status(401).send({ error: "failed: " + e })
