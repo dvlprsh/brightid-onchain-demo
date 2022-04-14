@@ -104,6 +104,16 @@ const Home: NextPage = () => {
   } = useBrightId()
 
   useEffect(() => {
+    ;(async () => {
+      const response = await fetch(`/api/test`, {
+        method: "GET"
+      }).then((response) => response.json())
+
+      console.log("response", response)
+    })()
+  }, [])
+
+  useEffect(() => {
     if (brightIdTransactionstatus !== undefined) {
       setTransactionstatus(brightIdTransactionstatus)
     }
@@ -223,7 +233,7 @@ const Home: NextPage = () => {
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-          Pass BrightID verification and can interact with “brightidv1” group
+            Pass BrightID verification and can interact with “brightidv1” group
           </Typography>
 
           <Stepper activeStep={_activeStep} orientation="vertical">
