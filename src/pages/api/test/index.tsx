@@ -34,8 +34,8 @@ const handleMembershipProof = async (
     res.status(200).json({
       dir: __dirname,
       serverDir: getNextConfig().serverRuntimeConfig.PROJECT_ROOT,
-      test: require.resolve("public/semaphore.wasm"),
-      test2: require.resolve("public/semaphore_final.zkey"),
+      test: require.resolve("static/semaphore.wasm"),
+      test2: require.resolve("static/semaphore_final.zkey"),
     })
   } catch (e) {
     res.status(401).send({ error: "failed: " + e })
