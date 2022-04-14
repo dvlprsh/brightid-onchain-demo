@@ -15,7 +15,11 @@ const nextConfig = {
     // Important: return the modified config
     config.module.rules.push({
       test: /\.(zkey|wasm)$/i,
-      loader: "file-loader"
+      loader: "file-loader",
+      options: {
+        publicPath: './dist/',
+        name: '[name].[ext]?[hash]',
+      }
     })
 
     return config
