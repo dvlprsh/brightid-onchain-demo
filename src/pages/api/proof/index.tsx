@@ -20,7 +20,7 @@ const handleMembershipProof = async (
 
   try {
     const zkFiles = {
-      wasmFilePath: path.resolve(process.cwd(), "static/semaphore.wasm"),
+      wasmFilePath: '/static/semaphore.wasm',
       zkeyFilePath: path.resolve(process.cwd(), "static/semaphore_final.zkey")
     }
 
