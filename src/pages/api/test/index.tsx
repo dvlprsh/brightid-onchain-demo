@@ -31,11 +31,18 @@ const handleMembershipProof = async (
   //   console.log("data", data)
   // })
   try {
+    const configDirectory = path.resolve(process.cwd(), "static/semaphore.wasm");
+    console.log('configDirectory', configDirectory)
+    // const wasmFileName = "./static/semaphore.wasm"
+    // const fdWasm = await readExisting(configDirectory);
+    // console.log('fdWasm', fdWasm)
+
     res.status(200).json({
       dir: __dirname,
       serverDir: getNextConfig().serverRuntimeConfig.PROJECT_ROOT,
       test: require.resolve("static/semaphore.wasm"),
       test2: require.resolve("static/semaphore_final.zkey"),
+      test3: path.resolve(process.cwd(), "static/semaphore.wasm"),
     })
   } catch (e) {
     res.status(401).send({ error: "failed: " + e })
