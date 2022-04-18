@@ -13,7 +13,7 @@ const provider = new providers.JsonRpcProvider(
 )
 
 const BrightidInterepContract = new Contract(
-  "0xfe795B30F4A6c7D9162C4D618A6335C140DEf9e9",
+  "0x1a0a89665CEb44878E0113d55990B962192d0861",
   BrightidInterep.abi,
   provider
 )

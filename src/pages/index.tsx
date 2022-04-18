@@ -76,13 +76,13 @@ const Home: NextPage = () => {
           </Box>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-            "brightidv1" on-chain group has {member} members
+            "brightidv2" on-chain group has {member ? member : 0} members
           </Typography>
           <Typography variant="body1" sx={{ mb: 4 }}>
             <div>
               This is a page where you can join/leave Interep on-chain groups
               through proof of humanity with BrightID. The current interep
-              on-chain group ID is “brightidv1”, and group ID type is converted
+              on-chain group ID is “brightidv2”, and group ID type is converted
               to uint in on-chain. <br /> Here, BrightID is currently being
               authenticated with minimal steps, and users can link their
               brightID and register for authentication on-chain. After that, you
@@ -105,18 +105,18 @@ const Home: NextPage = () => {
             brightid. Since we require on-chain authentication, users submit
             verifications signed by brightid nodes to the smart contract. If the
             user successfully registers for on-chain Bright ID authentication
-            through several conditions, the user can join “brightidv1” on-chain
+            through several conditions, the user can join “brightidv2” on-chain
             group.
             <h3>Leave guestBook</h3>A user with a group membership of
-            “brightidv1” can create a guestbook for the “externalNullifier”
+            “brightidv2” can create a guestbook for the “externalNullifier”
             provided on the current page only once. The guestbook doesn't use
             its own database and gets the logged signals as events on-chain.
             (See semaphore for more information on membership proof: {" "}
             <Link href="https://semaphore.appliedzkp.org/">
               <a className={classes.link}>Semaphore docs</a>
             </Link>
-            )<h3>Mint NFT</h3>A user with a group membership of “brightidv1” can
-            mint the NFT badge for the group “brightidv1” only once. Please note
+            )<h3>Mint NFT</h3>A user with a group membership of “brightidv2” can
+            mint the NFT badge for the group “brightidv2” only once. Please note
             that this NFT has no function and is for testing purposes only.
           </Typography>
         </Box>
