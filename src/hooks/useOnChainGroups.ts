@@ -5,7 +5,7 @@ import createIdentity from "@interep/identity"
 import Interep from "contract-artifacts/Interep.json"
 import BrightidInterep from "contract-artifacts/BrightidInterep.json"
 import getNextConfig from "next/config"
-import { generateMerkleProof } from "src/generatemerkleproof"
+import { generateMerkleProof } from "@zk-kit/protocols"
 import { HashZero } from "@ethersproject/constants"
 import {
   toUtf8Bytes,
@@ -15,6 +15,7 @@ import {
 } from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
 import * as qs from "qs"
+import createProof from "@interep/proof"
 
 function formatUint248String(text: string): string {
   const bytes = toUtf8Bytes(text)
@@ -187,33 +188,27 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const proveMembership = useCallback(
     async (signer: Signer, signal: string, nonce = 0) => {
-      const message = await signer.signMessage(
-        `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
-      )
+
 
       setLoading(true)
       const externalNullifier = EX_NULLIFIER
-
-      try {
-        const response = await fetch(
-          `/api/proof${qs.stringify(
-            {
-              message,
-              groupId: GROUPID,
-              signal,
-              externalNullifier
-            },
-            { addQueryPrefix: true }
-          )}`,
-          {
-            method: "GET"
-          }
-        ).then((response) => response.json())
-
-        if (response.error) {
-          throw new Error(response.error)
+      try{
+        const identity = await createIdentity(
+          (message) => signer.signMessage(message),
+          GROUPID
+        )
+        const zkFiles = {
+          wasmFilePath: "/static/semaphore.wasm",
+          zkeyFilePath: "/static/semaphore_final.zkey"
         }
-        const { publicSignals, solidityProof } = response
+
+        const { publicSignals, solidityProof } = await createProof(
+          identity,
+          GROUPID,
+          externalNullifier,
+          signal,
+          zkFiles
+        )
         const transaction = await BrightidInterepContract.connect(
           signer
         ).leaveMessage(
