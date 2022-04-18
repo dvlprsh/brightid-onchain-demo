@@ -88,7 +88,7 @@ const Mint: NextPage = () => {
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Those with group membership can mint “brightidv1-nft” badge(only once)
+          Those with group membership can mint “brightidv2-nft” badge(only once)
         </Typography>
 
         {transactionstatus !== undefined ? (

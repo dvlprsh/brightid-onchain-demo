@@ -7,7 +7,7 @@
 
 <br>
 This is a page where you can join/leave Interep on-chain groups through proof of humanity with BrightID.<br>
-The current interep on-chain group ID is “brightidv1”, and group ID type is converted to uint in on-chain.
+The current interep on-chain group ID is “brightidv2”, and group ID type is converted to uint in on-chain.
 Here, BrightID is currently being authenticated with minimal steps, and users can link their brightID and register for authentication on-chain.
 After that, you can join interep-brightid on-chain group.<br>
 
@@ -31,7 +31,7 @@ BrightidInterep contract is on-chain verification about semaphore proof and brig
 
 **Note, this is for Bright ID v5. Will be updated according to v6 coming soon<br>
 <br>
-Also, you can get an NFT badge for "brightidv1". This is for testing, and can only mint once through semaphore proofs.
+Also, you can get an NFT badge for "brightidv2". This is for testing, and can only mint once through semaphore proofs.
 
 ---
 
@@ -39,16 +39,16 @@ Also, you can get an NFT badge for "brightidv1". This is for testing, and can on
 The features currently provided are 
 1. Join/leave to an interep on-chain group
 2. Write a guestBook for the currently provided “externalNullifier”
-3. Mint the NFT badge for “brightidv1” group
+3. Mint the NFT badge for “brightidv2” group
 
-(2, 3 must have “brightidv1” on-chain group membership)
+(2, 3 must have “brightidv2” on-chain group membership)
 
 ### Join/leave on-chain Group
 First, connect your wallet to the page and have brightid on your mobile phone.
 The step of generating a unique identifier(contextId) is required, currently the contextId is ETH address, and a link is created to register the contextId to the context(interep here).
 This link is rendered as a QR code on our page. Users can receive off-chain authentication by scanning the QR code with their brightid.
 Since we require on-chain authentication, users submit verifications signed by brightid nodes to the smart contract.
-If the user successfully registers for on-chain Bright ID authentication through several conditions, the user can join “brightidv1” on-chain group.
+If the user successfully registers for on-chain Bright ID authentication through several conditions, the user can join “brightidv2” on-chain group.
 
 ### Write guestBook
 A user with a group membership of “brightidv2” can create a guestbook for the “externalNullifier” provided on the current page only once.
