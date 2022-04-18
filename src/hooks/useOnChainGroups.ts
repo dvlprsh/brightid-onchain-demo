@@ -251,34 +251,25 @@ export default function useOnChainGroups(): ReturnParameters {
   }, [])
 
   const mintNFT = useCallback(async (signer: Signer, nonce = 0) => {
-    const message = await signer.signMessage(
-      `Sign this message to generate your ${GROUPID} Semaphore identity with key nonce: ${nonce}.`
-    )
-
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `/api/proof${qs.stringify(
-          {
-            message,
-            groupId: GROUPID,
-            signal: "brightidv1-nft",
-            externalNullifier: GROUPID
-          },
-          { addQueryPrefix: true }
-        )}`,
-        {
-          method: "GET"
-        }
-      ).then((response) => response.json())
-
-      if (response.error) {
-        throw new Error(response.error)
+      const identity = await createIdentity(
+        (message) => signer.signMessage(message),
+        GROUPID
+      )
+      const zkFiles = {
+        wasmFilePath: "/static/semaphore.wasm",
+        zkeyFilePath: "/static/semaphore_final.zkey"
       }
 
-      const { publicSignals, solidityProof } = response
-
+      const { publicSignals, solidityProof } = await createProof(
+        identity,
+        GROUPID,
+        GROUPID,
+        "brightidv1-nft",
+        zkFiles
+      )
       const transaction = await BrightidInterepContract.connect(signer).mint(
         publicSignals.nullifierHash,
         solidityProof
