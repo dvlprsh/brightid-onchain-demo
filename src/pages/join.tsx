@@ -78,7 +78,6 @@ const Home: NextPage = () => {
   >()
   const [verified, setVerified] = useState<boolean>(false)
   const [_identityCommitment, setIdentityCommitment] = useState<string>()
-  const [_transactionstatus, setTransactionstatus] = useState<boolean>()
   const [_etherscanLink, setEtherscanLink] = useState<string>()
   const url = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${account}`
 
@@ -102,18 +101,6 @@ const Home: NextPage = () => {
     loading: brightIdLoading,
     etherscanLink: brightIdEtherscanLink
   } = useBrightId()
-
-  useEffect(() => {
-    if (brightIdTransactionstatus !== undefined) {
-      setTransactionstatus(brightIdTransactionstatus)
-    }
-  }, [brightIdTransactionstatus])
-
-  useEffect(() => {
-    if (transactionstatus !== undefined) {
-      setTransactionstatus(transactionstatus)
-    }
-  }, [transactionstatus])
 
   useEffect(() => {
     etherscanLink && setEtherscanLink(etherscanLink)
@@ -270,11 +257,11 @@ const Home: NextPage = () => {
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                {_transactionstatus !== undefined ? (
+                {transactionstatus !== undefined ? (
                   <Box>
                     <Typography variant="body1">
                       Transaction{" "}
-                      {!!_transactionstatus ? "Successful" : "Failed"} (Check
+                      {!!transactionstatus ? "Successful" : "Failed"} (Check
                       the&nbsp;
                       <Link
                         href={_etherscanLink}
