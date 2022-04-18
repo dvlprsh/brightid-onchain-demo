@@ -14,7 +14,6 @@ import {
   formatBytes32String
 } from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
-import * as qs from "qs"
 import createProof from "@interep/proof"
 
 function formatUint248String(text: string): string {
@@ -39,14 +38,14 @@ const InterepContract = new Contract(
   provider
 )
 const BrightidInterepContract = new Contract(
-  "0xfe795B30F4A6c7D9162C4D618A6335C140DEf9e9",
+  "0x1a0a89665CEb44878E0113d55990B962192d0861",
   BrightidInterep.abi,
   provider
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = formatUint248String("brightidv1")
-const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
+const GROUPID = formatUint248String("brightidv2")
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season2"))//BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
@@ -95,7 +94,6 @@ export default function useOnChainGroups(): ReturnParameters {
         (message) => signer.signMessage(message),
         GROUPID
       )
-
       const identityCommitment = identity.genIdentityCommitment()
 
       const api = new OnchainAPI()
@@ -266,7 +264,7 @@ export default function useOnChainGroups(): ReturnParameters {
         identity,
         GROUPID,
         GROUPID,
-        "brightidv1-nft",
+        "brightidv2-nft",
         zkFiles
       )
       const transaction = await BrightidInterepContract.connect(signer).mint(

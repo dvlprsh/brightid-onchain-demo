@@ -25,7 +25,7 @@ contract BrightidInterep is ERC721,Ownable {
      * @param _context BrightID context used for verifying users
      * @param _verifier BrightID verifier address that signs BrightID verifications
      */
-    constructor(address interepAddress, bytes32 _context, address _verifier) ERC721("InterepBrightidv1", "IRBIv1") {
+    constructor(address interepAddress, bytes32 _context, address _verifier) ERC721("InterepBrightidv2", "IRBIv2") {
         interep = IInterep(interepAddress);
         
         // ecrecover returns zero on error
@@ -130,8 +130,8 @@ contract BrightidInterep is ERC721,Ownable {
     function mint(uint256 nullifierHash, uint256[8] calldata proof) public {
         require(checkMyBrightid(msg.sender), "your brightid is not verified");
 
-        uint256 groupId = 173940653116352066111980355808565635588994233647684490854317820238565998592; //formatUint248String("brightidv1")
-        bytes32 signal = bytes32("brightidv1-nft");
+        uint256 groupId = 173940653116352066111980729952984792300141293791001666222770852157297000448; //formatUint248String("brightidv2")
+        bytes32 signal = bytes32("brightidv2-nft");
 
         interep.verifyProof(groupId, signal, nullifierHash, groupId, proof);
 
