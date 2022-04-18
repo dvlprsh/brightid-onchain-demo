@@ -214,7 +214,8 @@ export default function useOnChainGroups(): ReturnParameters {
           formatBytes32String(signal),
           publicSignals.nullifierHash,
           externalNullifier,
-          solidityProof
+          solidityProof,
+          { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
         )
         const receipt = await provider.waitForTransaction(transaction.hash)
 
