@@ -7,7 +7,7 @@ const nextConfig = {
     infuraApiKey: process.env.INFURA_API_KEY,
     brightIdApiKey: process.env.BRIGHTID_API_PRIVATE_KEY,
   },
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
         config.plugins.push(
             new webpack.ProvidePlugin({
