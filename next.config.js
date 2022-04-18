@@ -19,7 +19,6 @@ const nextConfig = {
             fs: false,
             stream: false,
             crypto: false,
-            assert: false,
             os: false,
             readline: false,
             ejs: false,
