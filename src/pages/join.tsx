@@ -270,7 +270,7 @@ const Home: NextPage = () => {
                 {hasjoined ? "Leave" : "Join"} Group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
-                {_transactionstatus ? (
+                {_transactionstatus !== undefined ? (
                   <Box>
                     <Typography variant="body1">
                       Transaction{" "}

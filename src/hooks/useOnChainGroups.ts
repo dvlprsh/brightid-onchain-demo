@@ -125,7 +125,7 @@ export default function useOnChainGroups(): ReturnParameters {
       const transaction = await InterepContract.connect(adminWallet).addMember(
         GROUPID,
         identityCommitment,
-        { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 }
+        { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
       )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
@@ -171,7 +171,7 @@ export default function useOnChainGroups(): ReturnParameters {
         IdentityCommitment,
         merkleproof.siblings,
         merkleproof.pathIndices,
-        { gasPrice: utils.parseUnits("10", "gwei"), gasLimit: 3000000 }
+        { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
       )
 
       const receipt = await provider.waitForTransaction(transaction.hash)
@@ -188,11 +188,9 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const proveMembership = useCallback(
     async (signer: Signer, signal: string, nonce = 0) => {
-
-
       setLoading(true)
       const externalNullifier = EX_NULLIFIER
-      try{
+      try {
         const identity = await createIdentity(
           (message) => signer.signMessage(message),
           GROUPID
@@ -272,8 +270,10 @@ export default function useOnChainGroups(): ReturnParameters {
       )
       const transaction = await BrightidInterepContract.connect(signer).mint(
         publicSignals.nullifierHash,
-        solidityProof
+        solidityProof,
+        { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
       )
+
       const receipt = await provider.waitForTransaction(transaction.hash)
 
       setTransactionStatus(!!receipt.status)

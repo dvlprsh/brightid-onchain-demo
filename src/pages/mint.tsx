@@ -88,10 +88,10 @@ const Mint: NextPage = () => {
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 4 }}>
-        Those with group membership can mint “brightidv1-nft” badge(only once)
+          Those with group membership can mint “brightidv1-nft” badge(only once)
         </Typography>
 
-        {transactionstatus ? (
+        {transactionstatus !== undefined ? (
           <Box>
             <Typography variant="body1">
               Transaction {!!transactionstatus ? "Successful" : "Failed"}{" "}
@@ -111,15 +111,15 @@ const Mint: NextPage = () => {
             </Button>
           </Box>
         ) : (
-          <LoadingButton
-            fullWidth
-            onClick={mintNft}
-            variant="outlined"
-            loading={loading}
-          >
-            Mint NFT
-          </LoadingButton>
-        )}
+            <LoadingButton
+              fullWidth
+              onClick={mintNft}
+              variant="outlined"
+              loading={loading}
+            >
+              Mint NFT
+            </LoadingButton>
+          )}
 
         {_error && (
           <Paper className={classes.results} sx={{ p: 3 }}>

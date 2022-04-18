@@ -164,7 +164,7 @@ const Proof: NextPage = () => {
               Proof Membership
             </StepLabel>
             <StepContent style={{ width: 400 }}>
-              {transactionstatus ? (
+              {transactionstatus !== undefined ? (
                 <Box>
                   <Typography variant="body1">
                     Transaction {!!transactionstatus ? "Successful" : "Failed"}{" "}
