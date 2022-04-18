@@ -15,7 +15,7 @@ After that, you can join interep-brightid on-chain group.<br>
 <br>
 <br>
 
-You can try the demo here: https://brightid-on-chain.netlify.app/
+You can try the demo here: https://brightd-interep-group.vercel.app/
 
 ---
 
@@ -51,11 +51,11 @@ Since we require on-chain authentication, users submit verifications signed by b
 If the user successfully registers for on-chain Bright ID authentication through several conditions, the user can join “brightidv1” on-chain group.
 
 ### Write guestBook
-A user with a group membership of “brightidv1” can create a guestbook for the “externalNullifier” provided on the current page only once.
+A user with a group membership of “brightidv2” can create a guestbook for the “externalNullifier” provided on the current page only once.
 The guestbook doesn't use its own database and gets the logged signals as events on-chain. (See semaphore for more information on membership proof: [Semaphore docs](https://semaphore.appliedzkp.org/))
 
 ### Mint NFT
-A user with a group membership of “brightidv1” can mint the NFT badge for the group “brightidv1” only once. Please note that this NFT has no function and is for testing purposes only.
+A user with a group membership of “brightidv2” can mint the NFT badge for the group “brightidv2” only once. Please note that this NFT has no function and is for testing purposes only.
 
 ---
 
