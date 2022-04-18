@@ -16,6 +16,7 @@ import Tooltip from "@mui/material/Tooltip"
 
 import { useWeb3React } from "@web3-react/core"
 import { InjectedConnector } from "@web3-react/injected-connector"
+//import { NetworkConnector} from "@web3-react/network-connector"
 import { providers } from "ethers"
 
 const pages = [
@@ -26,6 +27,13 @@ const pages = [
 const injectedConnector = new InjectedConnector({
   supportedChainIds: [1, 3, 4, 5, 42]
 })
+
+// const network = new NetworkConnector({
+//   urls: {
+//     //42: 'http://localhost:3000',
+//   },
+//   defaultChainId: 42,
+// })
 
 export default function NavBar(): JSX.Element {
   const router = useRouter()
