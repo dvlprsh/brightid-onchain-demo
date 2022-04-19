@@ -12,10 +12,10 @@
   "dependencies": {
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
-    "@interep/api": "^0.6.0",
+    "@interep/api": "^0.6.1",
     "@interep/contracts": "^0.4.1",
     "@interep/identity": "^0.1.1",
-    "@interep/proof": "^0.4.3",
+    "@interep/proof": "^0.4.4",
     "@metamask/detect-provider": "^1.2.0",
     "@mui/icons-material": "^5.6.1",
     "@mui/lab": "^5.0.0-alpha.73",
