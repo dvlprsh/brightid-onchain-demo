@@ -15,7 +15,7 @@ After that, you can join interep-brightid on-chain group.<br>
 <br>
 <br>
 
-You can try the demo here: https://brightd-interep-group.vercel.app/
+You can try the demo here: https://brightid-interep-group.vercel.app/
 
 ---
 
