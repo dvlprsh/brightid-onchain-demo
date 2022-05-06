@@ -113,10 +113,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@appliedzkp/semaphore-contracts@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/@appliedzkp/semaphore-contracts/-/semaphore-contracts-0.6.2.tgz"
-  integrity sha512-g9Iv9kSDlN4kCzc2t21juFxRaP46YKq+AIDy0i90fjsBF8ZcmfjdjBM4C3MRpbxhvIYRiIYttTlaUzHwQ4dQNg==
+"@appliedzkp/semaphore-contracts@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.npmjs.org/@appliedzkp/semaphore-contracts/-/semaphore-contracts-0.9.0.tgz"
+  integrity sha512-b+3C90zswuoxv8FufsJKRjwP8n8GRDKPM7TIvKYJBxMdrVEmAkRNKQHLsQys0HwlUrrohqgh/b+3GSzsDyy+Vw==
   dependencies:
     "@openzeppelin/contracts" "^4.4.2"
     "@zk-kit/incremental-merkle-tree.sol" "^0.3.1"
@@ -907,21 +907,13 @@
     fastfile "0.0.19"
     ffjavascript "^0.2.48"
 
-"@interep/api@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.npmjs.org/@interep/api/-/api-0.6.0.tgz"
-  integrity sha512-BgCGVbJ3hx3c7OO/BZQyVAoLexffVFj0MTaOpwlXLA6ft8kkydtwkGHbMdjuXyPPGRkB5upaSD2wSCGd+H3t0w==
+"@interep/api@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.npmjs.org/@interep/api/-/api-0.6.1.tgz"
+  integrity sha512-LenETvFAGR4ysZ+rWqmoKJbrJ6KbxCict9mOaLsms4/+2Fo9pBZMkJ0RlHqjKyQLl5RLCKPJU5oxxeynLSKv4Q==
   dependencies:
     "@interep/reputation" "^0.1.0"
     axios "^0.23.0"
-
-"@interep/contracts@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.npmjs.org/@interep/contracts/-/contracts-0.4.1.tgz"
-  integrity sha512-WVPRFg2KYcZZW06+s23kwhyHyZ2UPnI7WdJ/St5ROzR6AV7Z941tb6fZH3O2gZL0ak1A4PVXjJ43V03x1Dmt+Q==
-  dependencies:
-    "@appliedzkp/semaphore-contracts" "^0.6.2"
-    "@openzeppelin/contracts" "^4.5.0"
 
 "@interep/identity@^0.1.1":
   version "0.1.1"
@@ -930,14 +922,14 @@
   dependencies:
     "@zk-kit/identity" "^1.4.1"
 
-"@interep/proof@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.npmjs.org/@interep/proof/-/proof-0.4.3.tgz"
-  integrity sha512-NkPMe9zZJeguMy2RmrJIABdE0XIrHrltfldgEKUc//B6uPxpJ4HyvaDsdPh35ca3jUSiTK0tU04YPCdiwil3XA==
+"@interep/proof@^0.4.4":
+  version "0.4.4"
+  resolved "https://registry.npmjs.org/@interep/proof/-/proof-0.4.4.tgz"
+  integrity sha512-MTgIJt0soigMiMaHTqthBlioi42n+2vC0nA72QdcoA924vXEPnqiwbCagE1G+GdebySsVZf1W8tP2ofwaGmXcQ==
   dependencies:
     "@ethersproject/solidity" "^5.5.0"
     "@ethersproject/strings" "^5.5.0"
-    "@interep/api" "^0.6.0"
+    "@interep/api" "^0.6.1"
     "@zk-kit/identity" "^1.4.1"
     "@zk-kit/incremental-merkle-tree" "^0.4.3"
     "@zk-kit/protocols" "^1.11.0"

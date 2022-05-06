@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Contract, providers, Signer, utils } from "ethers"
 import { formatBytes32String } from "ethers/lib/utils"
-import BrightidInterep from "contract-artifacts/BrightidInterep.json"
+import BrightidOnchain from "contract-artifacts/BrightidOnchainGroup.json"
 import getNextConfig from "next/config"
 import { sponsor } from "brightid_sdk"
 import { VerificationsApiResponse } from "src/types"
@@ -12,9 +12,9 @@ const provider = new providers.JsonRpcProvider(
   }` // kovan
 )
 
-const BrightidInterepContract = new Contract(
-  "0x1a0a89665CEb44878E0113d55990B962192d0861",
-  BrightidInterep.abi,
+const BrightidOnchainContract = new Contract(
+  "0xb2EE3750E8Ca888B9AbA20501d5b33534f847ca7",
+  BrightidOnchain.abi,
   provider
 )
 
@@ -54,7 +54,7 @@ export default function useBrightId(): ReturnParameters {
   const checkBrightid = useCallback(
     async (address: string): Promise<boolean | null> => {
       try {
-        const isRegistered = await BrightidInterepContract.isVerifiedUser(
+        const isRegistered = await BrightidOnchainContract.isVerifiedUser(
           address
         )
 
@@ -84,7 +84,7 @@ export default function useBrightId(): ReturnParameters {
 
       if(!isVerified)  throw Error("You're not linked with BrightID correctly.")
 
-      const transaction = await BrightidInterepContract.connect(
+      const transaction = await BrightidOnchainContract.connect(
         signer
       ).register(
         formatBytes32String(CONTEXT),
