@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react"
 import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
-import Semaphore from "contract-artifacts/Semaphore.json"
+import Semaphore_contract from "contract-artifacts/Semaphore.json"
 import BrightidOnchain from "contract-artifacts/BrightidOnchainGroup.json"
 import onchainAPI from "./OnchainAPI"
 import getNextConfig from "next/config"
-import { generateMerkleProof } from "@zk-kit/protocols"
+import { generateMerkleProof, Semaphore } from "@zk-kit/protocols"
 import { HashZero } from "@ethersproject/constants"
 import {
   toUtf8Bytes,
@@ -14,7 +14,6 @@ import {
   formatBytes32String
 } from "ethers/lib/utils"
 import { Bytes31 } from "soltypes"
-import createProof from "@interep/proof"
 
 function formatUint248String(text: string): string {
   const bytes = toUtf8Bytes(text)
@@ -34,7 +33,7 @@ const provider = new providers.JsonRpcProvider(
 )
 const SemaphoreContract = new Contract(
   "0x19722446e775d86f2585954961E23771d8758793",
-  Semaphore.abi,
+  Semaphore_contract.abi,
   provider
 )
 const BrightidOnchainContract = new Contract(
@@ -185,18 +184,29 @@ export default function useOnChainGroups(): ReturnParameters {
           (message) => signer.signMessage(message),
           GROUPID
         )
+        const identityCommitment = identity.genIdentityCommitment().toString()
         const zkFiles = {
           wasmFilePath: "/static/semaphore.wasm",
           zkeyFilePath: "/static/semaphore_final.zkey"
         }
 
-        const { publicSignals, solidityProof } = await createProof(
-          identity,
-          GROUPID,
-          externalNullifier,
-          signal,
-          zkFiles
+        const api = new onchainAPI()
+        const {depth} = await api.getGroup(GROUPID)
+        const members = await api.getGroupMembers(GROUPID)
+        const identityCommitments = members.map((member: any) => member.identityCommitment)
+
+        const merkelProof = generateMerkleProof(depth, BigInt(0), identityCommitments, identityCommitment)
+
+        const witness = Semaphore.genWitness(
+          identity.getTrapdoor(),
+          identity.getNullifier(),
+          merkelProof,
+          BigInt(externalNullifier),
+          signal
         )
+        const { publicSignals, proof } = await Semaphore.genProof(witness, zkFiles.wasmFilePath, zkFiles.zkeyFilePath)
+        const solidityProof = Semaphore.packToSolidityProof(proof)
+
         const transaction = await BrightidOnchainContract.connect(
           signer
         ).leaveMessage(
@@ -247,18 +257,29 @@ export default function useOnChainGroups(): ReturnParameters {
         (message) => signer.signMessage(message),
         GROUPID
       )
+      const identityCommitment = identity.genIdentityCommitment().toString()
       const zkFiles = {
         wasmFilePath: "/static/semaphore.wasm",
         zkeyFilePath: "/static/semaphore_final.zkey"
       }
 
-      const { publicSignals, solidityProof } = await createProof(
-        identity,
+      const api = new onchainAPI()
+      const {depth} = await api.getGroup(GROUPID)
+      const members = await api.getGroupMembers(GROUPID)
+      const identityCommitments = members.map((member: any) => member.identityCommitment)
+
+      const merkelProof = generateMerkleProof(depth, BigInt(0), identityCommitments, identityCommitment)
+
+      const witness = Semaphore.genWitness(
+        identity.getTrapdoor(),
+        identity.getNullifier(),
+        merkelProof,
         GROUPID,
-        GROUPID,
-        "brightidOnchainGroup-nft",
-        zkFiles
+        "brightidOnchainGroup-nft"
       )
+      const { publicSignals, proof } = await Semaphore.genProof(witness, zkFiles.wasmFilePath, zkFiles.zkeyFilePath)
+      const solidityProof = Semaphore.packToSolidityProof(proof)
+
       const transaction = await BrightidOnchainContract.connect(signer).mint(
         publicSignals.nullifierHash,
         solidityProof,
