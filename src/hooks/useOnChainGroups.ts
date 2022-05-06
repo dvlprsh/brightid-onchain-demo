@@ -3,6 +3,7 @@ import { Signer, Contract, providers, Wallet, utils } from "ethers"
 import createIdentity from "@interep/identity"
 import Semaphore from "contract-artifacts/Semaphore.json"
 import BrightidOnchain from "contract-artifacts/BrightidOnchainGroup.json"
+import onchainAPI from "./OnchainAPI"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "@zk-kit/protocols"
 import { HashZero } from "@ethersproject/constants"
@@ -42,53 +43,10 @@ const BrightidOnchainContract = new Contract(
   provider
 )
 
-//const GROUP_NAME = "brightidv1"
-const GROUPID = formatUint248String("brightidOnchain")//173940653116352066108267866021843083307125310770256553050992487833486229504
-const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))//BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
+const GROUPID = formatUint248String("brightidOnchain")
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
-
-async function getGroup(id: string) {
-  const endPoint =
-    "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
-  const query = `{
-    groups(where: { id: "${id}" }) {
-        id
-        depth
-        zeroValue
-        size
-        numberOfLeaves
-        root
-        admin
-      }
-    }`
-  const response = await fetch(endPoint, {
-    method: "POST",
-    headers: {"Content-Type": "application/json" },
-    body: JSON.stringify({ query })
-  })
-  console.log(response)
-  return response.json()
-}
-
-async function getGroupMembers(groupId: string) {
-  const endPoint =
-  "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
-const query = `{
-  members(where: { group: "${groupId}" }, orderBy: index) {
-      id
-      identityCommitment
-      index
-    }
-  }`
-const response = await fetch(endPoint, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ query })
-})
-
-return response.json()
-}
 
 type ReturnParameters = {
   signMessage: (signer: Signer, message: string) => Promise<string | null>
@@ -136,17 +94,15 @@ export default function useOnChainGroups(): ReturnParameters {
         GROUPID
       )
       const identityCommitment = identity.genIdentityCommitment()
-      const members = await getGroupMembers(GROUPID)
+      const api = new onchainAPI()
+      const members = await api.getGroupMembers(GROUPID)
 
-      const identityCommitments = members.map(
-        (member: any) => member.identityCommitment
-      )
+      const identityCommitments = members.map((member:any)=> member.identityCommitment)
 
       const hasJoined = identityCommitments.includes(
         identityCommitment.toString()
       )
       setHasjoined(hasJoined)
-
       setLoading(false)
       return identityCommitment.toString()
     },
@@ -182,13 +138,11 @@ export default function useOnChainGroups(): ReturnParameters {
 
       setLoading(true)
 
-      const { root } = await getGroup(GROUPID)
-      const members = await getGroupMembers(GROUPID)
+      const api = new onchainAPI()
+      const { root } = await api.getGroup(GROUPID)
+      const members = await api.getGroupMembers(GROUPID)
 
-      const indexedMembers = members
-        .map((member: any) => [member.index, member.identityCommitment])
-        .sort()
-      const identityCommitments = indexedMembers.map((member: any) => member[1])
+      const identityCommitments = members.map((member:any)=> member.identityCommitment)
 
       const merkleproof = generateMerkleProof(
         20,
@@ -324,7 +278,8 @@ export default function useOnChainGroups(): ReturnParameters {
   }, [])
 
   const memberCount = useCallback(async () => {
-    const { size } = await getGroup(GROUPID)
+    const api = new onchainAPI()
+    const { size } = await api.getGroup(GROUPID)
     return size
   }, [])
 
