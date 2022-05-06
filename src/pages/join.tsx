@@ -206,17 +206,17 @@ const Home: NextPage = () => {
       <Paper className={classes.container} elevation={0} square={true}>
         <Box className={classes.content}>
           <Typography variant="h4" sx={{ mb: 2 }}>
-            Interep On-chain group
+            Semaphore On-chain group
           </Typography>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
-          Pass BrightID verification and can interact with “brightidv2” group
+          Pass BrightID verification and can interact with “brightidOnchain” group
           </Typography>
 
           <Stepper activeStep={_activeStep} orientation="vertical">
             <Step>
               <StepLabel error={_error?.errorStep === 0}>
-                Link BrightID to Interep
+                Link BrightID to Brightid Semaphore Onchain group
               </StepLabel>
               <StepContent style={{ width: 400 }}>
                 <Paper className={classes.stepWrapper} sx={{ p: 3 }}>

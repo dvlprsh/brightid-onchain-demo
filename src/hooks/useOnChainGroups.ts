@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react"
 import { Signer, Contract, providers, Wallet, utils } from "ethers"
-import { OnchainAPI } from "@interep/api"
 import createIdentity from "@interep/identity"
-import Interep from "contract-artifacts/Interep.json"
-import BrightidInterep from "contract-artifacts/BrightidInterep.json"
+import Semaphore from "contract-artifacts/Semaphore.json"
+import BrightidOnchain from "contract-artifacts/BrightidOnchainGroup.json"
 import getNextConfig from "next/config"
 import { generateMerkleProof } from "@zk-kit/protocols"
 import { HashZero } from "@ethersproject/constants"
@@ -32,22 +31,64 @@ const provider = new providers.JsonRpcProvider(
     getNextConfig().publicRuntimeConfig.infuraApiKey
   }` // kovan
 )
-const InterepContract = new Contract(
-  "0xBeDb7A22bf236349ee1bEA7B4fb4Eb2403529030",
-  Interep.abi,
+const SemaphoreContract = new Contract(
+  "0x19722446e775d86f2585954961E23771d8758793",
+  Semaphore.abi,
   provider
 )
-const BrightidInterepContract = new Contract(
-  "0x1a0a89665CEb44878E0113d55990B962192d0861",
-  BrightidInterep.abi,
+const BrightidOnchainContract = new Contract(
+  "0xb2EE3750E8Ca888B9AbA20501d5b33534f847ca7",
+  BrightidOnchain.abi,
   provider
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = formatUint248String("brightidv2")
-const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season2"))//BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
+const GROUPID = "1000"//formatUint248String("brightidOnchain")//173940653116352066108267866021843083307125310770256553050992487833486229504
+const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))//BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
+
+async function getGroup(id: string) {
+  const endPoint =
+    "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
+  const query = `{
+    groups(where: { id: "${id}" }) {
+        id
+        depth
+        zeroValue
+        size
+        numberOfLeaves
+        root
+        admin
+      }
+    }`
+  const response = await fetch(endPoint, {
+    method: "POST",
+    headers: {"Content-Type": "application/json" },
+    body: JSON.stringify({ query })
+  })
+  console.log(response)
+  return response.json()
+}
+
+async function getGroupMembers(groupId: string) {
+  const endPoint =
+  "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
+const query = `{
+  members(where: { group: "${groupId}" }, orderBy: index) {
+      id
+      identityCommitment
+      index
+    }
+  }`
+const response = await fetch(endPoint, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ query })
+})
+
+return response.json()
+}
 
 type ReturnParameters = {
   signMessage: (signer: Signer, message: string) => Promise<string | null>
@@ -95,9 +136,7 @@ export default function useOnChainGroups(): ReturnParameters {
         GROUPID
       )
       const identityCommitment = identity.genIdentityCommitment()
-
-      const api = new OnchainAPI()
-      const members = await api.getGroupMembers({ groupId: GROUPID })
+      const members = await getGroupMembers(GROUPID)
 
       const identityCommitments = members.map(
         (member: any) => member.identityCommitment
@@ -120,7 +159,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
       setLoading(true)
 
-      const transaction = await InterepContract.connect(adminWallet).addMember(
+      const transaction = await SemaphoreContract.connect(adminWallet).addMember(
         GROUPID,
         identityCommitment,
         { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
@@ -143,9 +182,8 @@ export default function useOnChainGroups(): ReturnParameters {
 
       setLoading(true)
 
-      const api = new OnchainAPI()
-      const { root } = await api.getGroup({ id: GROUPID })
-      const members = await api.getGroupMembers({ groupId: GROUPID })
+      const { root } = await getGroup(GROUPID)
+      const members = await getGroupMembers(GROUPID)
 
       const indexedMembers = members
         .map((member: any) => [member.index, member.identityCommitment])
@@ -162,7 +200,7 @@ export default function useOnChainGroups(): ReturnParameters {
       if (merkleproof.root != root)
         throw "root different. your transaction must be failed"
 
-      const transaction = await InterepContract.connect(
+      const transaction = await SemaphoreContract.connect(
         adminWallet
       ).removeMember(
         GROUPID,
@@ -205,7 +243,7 @@ export default function useOnChainGroups(): ReturnParameters {
           signal,
           zkFiles
         )
-        const transaction = await BrightidInterepContract.connect(
+        const transaction = await BrightidOnchainContract.connect(
           signer
         ).leaveMessage(
           GROUPID,
@@ -231,11 +269,11 @@ export default function useOnChainGroups(): ReturnParameters {
 
   const loadGuestBook = useCallback(async () => {
     const startblock = 30970366
-    const filter = BrightidInterepContract.filters.saveMessage(
+    const filter = BrightidOnchainContract.filters.saveMessage(
       utils.hexlify(EX_NULLIFIER)
     ) //externalnullifier
 
-    const filterEvent = await BrightidInterepContract.queryFilter(
+    const filterEvent = await BrightidOnchainContract.queryFilter(
       filter,
       startblock
     )
@@ -264,10 +302,10 @@ export default function useOnChainGroups(): ReturnParameters {
         identity,
         GROUPID,
         GROUPID,
-        "brightidv2-nft",
+        "brightidOnchainGroup-nft",
         zkFiles
       )
-      const transaction = await BrightidInterepContract.connect(signer).mint(
+      const transaction = await BrightidOnchainContract.connect(signer).mint(
         publicSignals.nullifierHash,
         solidityProof,
         { gasPrice: utils.parseUnits("3", "gwei"), gasLimit: 3000000 }
@@ -286,8 +324,7 @@ export default function useOnChainGroups(): ReturnParameters {
   }, [])
 
   const memberCount = useCallback(async () => {
-    const api = new OnchainAPI()
-    const { size } = await api.getGroup({ id: GROUPID })
+    const { size } = await getGroup(GROUPID)
     return size
   }, [])
 

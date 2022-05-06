@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "@appliedzkp/semaphore-contracts/interfaces/ISemaphore.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@interep/contracts/IInterep.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BrightidInterep is ERC721,Ownable {
-    IInterep public interep;
+contract BrightidOnchainGroup is ERC721,Ownable {
+    ISemaphore public semaphore;
 
     bytes32 public context;
     address public verifier;
@@ -25,8 +25,8 @@ contract BrightidInterep is ERC721,Ownable {
      * @param _context BrightID context used for verifying users
      * @param _verifier BrightID verifier address that signs BrightID verifications
      */
-    constructor(address interepAddress, bytes32 _context, address _verifier) ERC721("InterepBrightidv2", "IRBIv2") {
-        interep = IInterep(interepAddress);
+    constructor(address semaphoreAddress, bytes32 _context, address _verifier) ERC721("BrightidOnchainGroup", "BOG") {
+        semaphore = ISemaphore(semaphoreAddress);
         
         // ecrecover returns zero on error
         require(_verifier != address(0), "verifier is not valid");
@@ -122,7 +122,7 @@ contract BrightidInterep is ERC721,Ownable {
         uint256[8] calldata _proof
     ) public {
         require(checkMyBrightid(msg.sender), "your brightid is not verified");
-        interep.verifyProof(_groupId, _signal, _nullifierHash, _externalNullifier, _proof); //check the event
+        semaphore.verifyProof(_groupId, _signal, _nullifierHash, _externalNullifier, _proof); //check the event
 
         emit saveMessage(_externalNullifier, _signal);
     }
@@ -130,10 +130,10 @@ contract BrightidInterep is ERC721,Ownable {
     function mint(uint256 nullifierHash, uint256[8] calldata proof) public {
         require(checkMyBrightid(msg.sender), "your brightid is not verified");
 
-        uint256 groupId = 173940653116352066111980729952984792300141293791001666222770852157297000448; //formatUint248String("brightidv2")
-        bytes32 signal = bytes32("brightidv2-nft");
+        uint256 groupId = 173940653116352066108267866021843083307125310770256553050992487833486229504; //formatUint248String("brightidOnchain")
+        bytes32 signal = bytes32("brightidOnchainGroup-nft");
 
-        interep.verifyProof(groupId, signal, nullifierHash, groupId, proof);
+        semaphore.verifyProof(groupId, signal, nullifierHash, groupId, proof);
 
         _mint(msg.sender, nullifierHash);
     }
