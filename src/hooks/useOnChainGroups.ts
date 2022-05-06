@@ -43,7 +43,7 @@ const BrightidOnchainContract = new Contract(
 )
 
 //const GROUP_NAME = "brightidv1"
-const GROUPID = "1000"//formatUint248String("brightidOnchain")//173940653116352066108267866021843083307125310770256553050992487833486229504
+const GROUPID = formatUint248String("brightidOnchain")//173940653116352066108267866021843083307125310770256553050992487833486229504
 const EX_NULLIFIER = BigInt(formatUint248String("guestbook-season1"))//BigInt(formatUint248String("guestbook-season1")) //guessbook-season1
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = ADMIN && new Wallet(ADMIN, provider)
