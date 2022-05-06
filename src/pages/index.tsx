@@ -80,13 +80,13 @@ const Home: NextPage = () => {
           </Typography>
           <Typography variant="body1" sx={{ mb: 4 }}>
             <div>
-              This is a page where you can join/leave Interep on-chain groups
-              through proof of humanity with BrightID. The current interep
+              This is a page where you can join/leave Semaphore on-chain groups
+              through proof of humanity with BrightID. The current Semaphore
               on-chain group ID is “brightidOnchain”, and group ID type is converted
               to uint in on-chain. <br /> Here, BrightID is currently being
               authenticated with minimal steps, and users can link their
               brightID and register for authentication on-chain. After that, you
-              can join interep-brightid on-chain group.
+              can join brightid on-chain group.
             </div>
             <div>
               (Refer to the following link for how to get Brightid verification:{" "}
