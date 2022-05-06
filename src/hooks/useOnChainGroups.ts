@@ -50,7 +50,7 @@ const adminWallet = ADMIN && new Wallet(ADMIN, provider)
 
 async function getGroup(id: string) {
   const endPoint =
-    "https://thegraph.com/hosted-service/subgraph/semaphore-protocol/kovan"
+    "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
   const query = `{
     groups(where: { id: "${id}" }) {
         id
@@ -73,7 +73,7 @@ async function getGroup(id: string) {
 
 async function getGroupMembers(groupId: string) {
   const endPoint =
-  "https://thegraph.com/hosted-service/subgraph/semaphore-protocol/kovan"
+  "https://api.thegraph.com/subgraphs/name/semaphore-protocol/kovan"
 const query = `{
   members(where: { group: "${groupId}" }, orderBy: index) {
       id
