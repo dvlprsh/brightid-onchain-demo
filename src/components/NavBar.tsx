@@ -48,7 +48,7 @@ export default function NavBar(): JSX.Element {
   }
 
   const copyAccount = async () => {
-    account && await navigator.clipboard.writeText(account)
+    account && (await navigator.clipboard.writeText(account))
   }
 
   useEffect(() => {
@@ -99,7 +99,12 @@ export default function NavBar(): JSX.Element {
           </Box>
           {account ? (
             <Tooltip disableFocusListener disableTouchListener title="Copy">
-              <Button variant="outlined" color="primary" onClick={copyAccount} sx={{marginRight: 10}}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={copyAccount}
+                sx={{ marginRight: 10 }}
+              >
                 {shortenAddress(account)}
               </Button>
             </Tooltip>
@@ -108,7 +113,7 @@ export default function NavBar(): JSX.Element {
               variant="contained"
               color="primary"
               onClick={() => activate(injectedConnector)}
-              sx={{marginRight: 10}}
+              sx={{ marginRight: 10 }}
             >
               Connect Wallet
             </Button>
