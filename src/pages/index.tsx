@@ -72,7 +72,7 @@ const Home: NextPage = () => {
       <Paper className={classes.container} elevation={0} square={true}>
         <Box className={classes.content}>
           <Box sx={{ width: 500 }}>
-            <Image src={logo} alt="interep X BrihtID" layout="responsive" />
+            <Image src={logo} alt="Semaphore X BrihtID" layout="responsive" />
           </Box>
 
           <Typography variant="body1" sx={{ mb: 4 }}>
@@ -99,7 +99,7 @@ const Home: NextPage = () => {
             First, connect your wallet to the page and have brightid on your
             mobile phone. The step of generating a unique identifier(contextId)
             is required, currently the contextId is ETH address, and a link is
-            created to register the contextId to the context(interep here). This
+            created to register the contextId to the context. This
             link is rendered as a QR code on our page. Users can receive
             off-chain authentication by scanning the QR code with their
             brightid. Since we require on-chain authentication, users submit

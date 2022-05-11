@@ -15,7 +15,7 @@ After that, you can join brightid on-chain group.<br>
 <br>
 <br>
 
-You can try the demo here: https://brightid-interep-group.vercel.app/
+You can try the demo here: https://brightid-semaphore-group.vercel.app/
 
 ---
 
@@ -45,7 +45,7 @@ The features currently provided are
 
 ### Join/leave on-chain Group
 First, connect your wallet to the page and have brightid on your mobile phone.
-The step of generating a unique identifier(contextId) is required, currently the contextId is ETH address, and a link is created to register the contextId to the context(interep here).
+The step of generating a unique identifier(contextId) is required, currently the contextId is ETH address, and a link is created to register the contextId to the context.
 This link is rendered as a QR code on our page. Users can receive off-chain authentication by scanning the QR code with their brightid.
 Since we require on-chain authentication, users submit verifications signed by brightid nodes to the smart contract.
 If the user successfully registers for on-chain Bright ID authentication through several conditions, the user can join “brightidOnchain” on-chain group.
@@ -88,4 +88,4 @@ yarn dev
 ## References
 You can find more details about BrightID app in [BrightID docs](https://brightid.gitbook.io/brightid/).
 
-You can find more details about Interep onchain group in [Interep docs](https://docs.interep.link/guides/onchain-groups).
+You can find more details about Semaphore in [Semaphore docs](https://semaphore.appliedzkp.org/docs/introduction).

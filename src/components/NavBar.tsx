@@ -67,7 +67,7 @@ export default function NavBar(): JSX.Element {
             sx={{ width: 170, marginRight: 5 }}
             onClick={() => router.push("/")}
           >
-            <Image src={logo} alt="interep X BrihtID" layout="responsive" />
+            <Image src={logo} alt="Semaphore X BrihtID" layout="responsive" />
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             <Button
