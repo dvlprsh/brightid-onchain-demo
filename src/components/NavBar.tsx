@@ -64,7 +64,7 @@ export default function NavBar(): JSX.Element {
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Box
-            sx={{ width: 170, marginRight: 5 }}
+            sx={{ width: 100, marginRight: 5, marginLeft: 2 }}
             onClick={() => router.push("/")}
           >
             <Image src={logo} alt="Semaphore X BrihtID" layout="responsive" />
