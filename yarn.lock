@@ -907,39 +907,6 @@
     fastfile "0.0.19"
     ffjavascript "^0.2.48"
 
-"@interep/api@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.npmjs.org/@interep/api/-/api-0.6.1.tgz"
-  integrity sha512-LenETvFAGR4ysZ+rWqmoKJbrJ6KbxCict9mOaLsms4/+2Fo9pBZMkJ0RlHqjKyQLl5RLCKPJU5oxxeynLSKv4Q==
-  dependencies:
-    "@interep/reputation" "^0.1.0"
-    axios "^0.23.0"
-
-"@interep/identity@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.npmjs.org/@interep/identity/-/identity-0.1.1.tgz"
-  integrity sha512-UVW9B+zBqvPaQB8euEtXlk0g2U3BGYeLLRcLwEuTm0wLb6IT5WjX2PYK4HuuEBQ31O5BVGwLaWec71K0bER3Nw==
-  dependencies:
-    "@zk-kit/identity" "^1.4.1"
-
-"@interep/proof@^0.4.4":
-  version "0.4.4"
-  resolved "https://registry.npmjs.org/@interep/proof/-/proof-0.4.4.tgz"
-  integrity sha512-MTgIJt0soigMiMaHTqthBlioi42n+2vC0nA72QdcoA924vXEPnqiwbCagE1G+GdebySsVZf1W8tP2ofwaGmXcQ==
-  dependencies:
-    "@ethersproject/solidity" "^5.5.0"
-    "@ethersproject/strings" "^5.5.0"
-    "@interep/api" "^0.6.1"
-    "@zk-kit/identity" "^1.4.1"
-    "@zk-kit/incremental-merkle-tree" "^0.4.3"
-    "@zk-kit/protocols" "^1.11.0"
-    circomlibjs "0.0.8"
-
-"@interep/reputation@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/@interep/reputation/-/reputation-0.1.0.tgz"
-  integrity sha512-bSK8S1ZetMzYyirec57S1lDVRoaS6gysy5ZuSHqvuL9NGdjgSH4I/EWk9gsQ1RdnUOyqSzkULF3oomeDp3VY1w==
-
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.0.5"
   resolved "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.0.5.tgz"
@@ -1547,10 +1514,10 @@
   resolved "https://registry.npmjs.org/@zk-kit/incremental-merkle-tree/-/incremental-merkle-tree-0.4.3.tgz"
   integrity sha512-2qHfrJXtPx8/UmF0wFAUr4VqCLr3J/P859fk/e3fwKLUnf3baeIUAO6inY4wrh0NGy4bzpKUWYjDph0yTbPz6A==
 
-"@zk-kit/protocols@^1.11.0":
-  version "1.11.0"
-  resolved "https://registry.npmjs.org/@zk-kit/protocols/-/protocols-1.11.0.tgz"
-  integrity sha512-WfjLL1kaasOb0GkTfB3o/jgom8y93qCI4/T+r1nAcNa/RTxX1hkXWs9bhL/ZaKbFmKMesaMCFev89wpBeHCxkg==
+"@zk-kit/protocols@^1.11.1":
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/@zk-kit/protocols/-/protocols-1.11.1.tgz#e70942097e6bd6759afd72c6b22c358ae1588d86"
+  integrity sha512-fjjrYwZCcbKMJb3+xVdLwV6kUpRMTI9PVdC6M1zHfqEqcDebmfGmMjduoL/oFwq3wZTBNV1zQvRc96WZ0Nvrnw==
   dependencies:
     "@ethersproject/bytes" "^5.5.0"
     "@ethersproject/solidity" "^5.5.0"
@@ -1889,13 +1856,6 @@ axios@^0.21.0:
   integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
   dependencies:
     follow-redirects "^1.14.0"
-
-axios@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.npmjs.org/axios/-/axios-0.23.0.tgz"
-  integrity sha512-NmvAE4i0YAv5cKq8zlDoPd1VLKAqX5oLuZKs8xkJa4qi6RGn0uhCYFjWtHHC9EM/MwOwYWOs53W+V0aqEXq1sg==
-  dependencies:
-    follow-redirects "^1.14.4"
 
 axobject-query@^2.2.0:
   version "2.2.0"
@@ -4864,7 +4824,7 @@ flow-stoplight@^1.0.0:
   resolved "https://registry.npmjs.org/flow-stoplight/-/flow-stoplight-1.0.0.tgz"
   integrity sha1-SiksW8/4s5+mzAyxqFPYbyfu/3s=
 
-follow-redirects@^1.14.0, follow-redirects@^1.14.4:
+follow-redirects@^1.14.0:
   version "1.14.9"
   resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.14.9.tgz"
   integrity sha512-MQDfihBQYMcyy5dhRDJUHcw7lb2Pv/TuE6xP1vyraLukNDHKbDxDNaOE3NbCAdKQApno+GPRyo1YAp89yCjK4w==

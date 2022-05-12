@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { Signer, Contract, providers, Wallet, utils } from "ethers"
-import createIdentity from "@interep/identity"
+import createIdentity from "../utils/createIdentity"
 import Semaphore_contract from "contract-artifacts/Semaphore.json"
 import BrightidOnchain from "contract-artifacts/BrightidOnchainGroup.json"
 import onchainAPI from "./OnchainAPI"
